@@ -10,6 +10,7 @@ from .serializers import (
     OrderSerializer,
     OrderCreateSerializer
 )
+from telegram_bot import notify_order_status_changed
 
 
 @extend_schema(tags=['cart'])
@@ -34,7 +35,6 @@ class CartViewSet(viewsets.GenericViewSet):
         if serializer.is_valid():
             product_id = serializer.validated_data['product_id']
             quantity = serializer.validated_data['quantity']
-
             cart_item, created = CartItem.objects.get_or_create(
                 cart=cart,
                 product_id=product_id,
@@ -43,7 +43,6 @@ class CartViewSet(viewsets.GenericViewSet):
             if not created:
                 cart_item.quantity += quantity
                 cart_item.save()
-
             return Response(CartSerializer(cart).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
@@ -125,6 +124,7 @@ class OrderViewSet(viewsets.GenericViewSet):
                 )
             order.status = 'CANCELLED'
             order.save()
+            notify_order_status_changed(order)
             return Response({'message': 'Order cancelled successfully'})
         except Order.DoesNotExist:
             return Response(
@@ -149,6 +149,7 @@ class OrderViewSet(viewsets.GenericViewSet):
                 )
             order.status = new_status
             order.save()
+            notify_order_status_changed(order)
             return Response(OrderSerializer(order).data)
         except Order.DoesNotExist:
             return Response(
