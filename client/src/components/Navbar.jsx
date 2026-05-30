@@ -22,14 +22,17 @@ const Navbar = () => {
 
         <div style={s.links}>
           {[
-            { to: '/', label: 'Home' },
-            { to: '/products', label: 'Products' },
-            ...(user ? [
-              { to: '/builds', label: 'Builds' },
-              { to: '/chat', label: 'AI Chat' },
-              { to: '/cart', label: 'Cart' },
-              { to: '/orders', label: 'Orders' },
-            ] : []),
+          { to: '/', label: 'Home' },
+          { to: '/products', label: 'Products' },
+          ...(user ? [
+            { to: '/builds', label: 'Builds' },
+            { to: '/chat', label: 'AI Chat' },
+            { to: '/cart', label: 'Cart' },
+            { to: '/orders', label: 'Orders' },
+          ] : []),
+          ...(user?.role === 'SELLER' ? [
+            { to: '/seller', label: 'My Products' },
+          ] : []),
           ].map(({ to, label }) => (
             <Link key={to} to={to} style={isActive(to) ? s.linkActive : s.link}>
               {label}
