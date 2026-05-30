@@ -188,3 +188,38 @@ class ProfileView(generics.RetrieveUpdateAPIView):
 
     def get_object(self):
         return self.request.user
+
+
+@extend_schema(tags=['auth'])
+class BecomeSellerView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    @extend_schema(
+        request=None,
+        responses={
+            200: OpenApiResponse(description='You are now a seller'),
+            400: OpenApiResponse(description='Already a seller or admin'),
+        }
+    )
+    def post(self, request):
+        user = request.user
+
+        if user.role == 'SELLER':
+            return Response(
+                {'error': 'You are already a seller'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if user.role == 'ADMIN':
+            return Response(
+                {'error': 'Admin cannot become a seller'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        user.role = 'SELLER'
+        user.save()
+
+        return Response({
+            'message': 'Congratulations! You are now a seller',
+            'user': UserProfileSerializer(user).data
+        })
