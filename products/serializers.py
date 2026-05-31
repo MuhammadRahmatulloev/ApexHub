@@ -16,10 +16,16 @@ class BrandSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
+# ОДИН класс ProductImageSerializer (убрали дубликат)
 class ProductImageSerializer(serializers.ModelSerializer):
+    # product принимает ID как число или строку — IntegerField справится
+    product = serializers.PrimaryKeyRelatedField(
+        queryset=Product.objects.all()
+    )
+
     class Meta:
         model = ProductImage
-        fields = ['id', 'image', 'is_main']
+        fields = ['id', 'product', 'image', 'is_main']
 
 
 class ProductSpecificationSerializer(serializers.ModelSerializer):
