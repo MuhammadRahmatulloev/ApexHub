@@ -35,8 +35,12 @@ urlpatterns = [
     path('api/builds/', include('builds.urls')),
     path('api/chat/', include('chat.urls')),
     path('api/notifications/', include('notifications.urls')),
+    path('api/reviews/', include('reviews.urls')),
+    path('api/favorites/', include('favorites.urls')),
+    path('api/news/', include('news.urls')),
+    path('api/payments/', include('payments.urls')),
+    path('api/locations/', include('locations.urls')),
 ]
-
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

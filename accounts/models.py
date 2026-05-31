@@ -58,3 +58,20 @@ class VerificationCode(models.Model):
 
     def __str__(self):
         return f"{self.user.email} - {self.code}"
+
+
+class UserStats(models.Model):
+    user = models.OneToOneField(
+        User,
+        on_delete=models.CASCADE,
+        related_name='stats'
+    )
+    total_orders = models.PositiveIntegerField(default=0)
+    total_spent = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    total_favorites = models.PositiveIntegerField(default=0)
+    total_builds = models.PositiveIntegerField(default=0)
+    total_reviews = models.PositiveIntegerField(default=0)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f"Stats of {self.user.email}"

@@ -38,7 +38,6 @@ if not DEBUG:
     CSRF_COOKIE_SECURE = True
     SECURE_BROWSER_XSS_FILTER = True
 
-# Application definition
 
 INSTALLED_APPS = [
     'jazzmin',
@@ -59,6 +58,11 @@ INSTALLED_APPS = [
     'notifications',
     'orders',
     'products',
+    'reviews',
+    'favorites',
+    'news',
+    'payments',
+    'locations',
 ]
 
 MIDDLEWARE = [

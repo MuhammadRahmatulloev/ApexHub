@@ -16,9 +16,7 @@ class BrandSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at']
 
 
-# ОДИН класс ProductImageSerializer (убрали дубликат)
 class ProductImageSerializer(serializers.ModelSerializer):
-    # product принимает ID как число или строку — IntegerField справится
     product = serializers.PrimaryKeyRelatedField(
         queryset=Product.objects.all()
     )
@@ -80,9 +78,10 @@ class ProductCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = [
-            'name', 'slug', 'description', 'product_type',
+            'id', 'name', 'slug', 'description', 'product_type',
             'price', 'stock', 'is_available', 'category', 'brand'
         ]
+        read_only_fields = ['id']
 
     def create(self, validated_data):
         validated_data['seller'] = self.context['request'].user
