@@ -14,6 +14,7 @@ import BuildsPage from './pages/BuildsPage'
 import ChatPage from './pages/ChatPage'
 import SellerPage from './pages/SellerPage'
 import SellerProductForm from './pages/SellerProductForm'
+import './App.css'
 
 function App() {
   return (
@@ -31,10 +32,10 @@ function App() {
             <Route path="/profile" element={<ProtectedRoute><ProfilePage /></ProtectedRoute>} />
             <Route path="/builds" element={<ProtectedRoute><BuildsPage /></ProtectedRoute>} />
             <Route path="/chat" element={<ProtectedRoute><ChatPage /></ProtectedRoute>} />
-            <Route path="*" element={<Navigate to="/" />} />
             <Route path="/seller" element={<ProtectedRoute><SellerPage /></ProtectedRoute>} />
             <Route path="/seller/create" element={<ProtectedRoute><SellerProductForm /></ProtectedRoute>} />
             <Route path="/seller/edit/:id" element={<ProtectedRoute><SellerProductForm /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AuthProvider>
       </BrowserRouter>

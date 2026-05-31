@@ -1,6 +1,16 @@
 import { useEffect, useState, useRef } from 'react'
+import { marked } from 'marked'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+
+marked.setOptions({ breaks: true, gfm: true })
+
+const MarkdownContent = ({ content }) => (
+  <div
+    style={s.markdownBody}
+    dangerouslySetInnerHTML={{ __html: marked.parse(content || '') }}
+  />
+)
 
 const ChatPage = () => {
   const [conversations, setConversations] = useState([])
@@ -9,6 +19,7 @@ const ChatPage = () => {
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [loadingConvs, setLoadingConvs] = useState(true)
+  const [started, setStarted] = useState(false)
   const endRef = useRef(null)
 
   useEffect(() => {
@@ -23,6 +34,7 @@ const ChatPage = () => {
 
   const openConv = async (conv) => {
     setActiveConv(conv)
+    setStarted(true)
     const res = await api.get(`/chat/${conv.id}/messages/`)
     setMessages(res.data.messages || [])
   }
@@ -31,6 +43,7 @@ const ChatPage = () => {
     const res = await api.post('/chat/new_conversation/')
     setConversations(prev => [res.data, ...prev])
     setActiveConv(res.data)
+    setStarted(true)
     setMessages([])
   }
 
@@ -39,6 +52,7 @@ const ChatPage = () => {
     const text = input.trim()
     setInput('')
     setSending(true)
+    setStarted(true)
 
     const tempId = Date.now()
     setMessages(prev => [...prev, { id: tempId, role: 'user', content: text }])
@@ -46,10 +60,10 @@ const ChatPage = () => {
     try {
       const res = await api.post('/chat/send/', {
         message: text,
-        conversation_id: activeConv?.id,
+        conversation_id: activeConv?.id || null,
       })
 
-      if (!activeConv) {
+      if (!activeConv || !activeConv.id) {
         const newC = { id: res.data.conversation_id, title: text.slice(0, 50) }
         setActiveConv(newC)
         setConversations(prev => [newC, ...prev])
@@ -78,6 +92,7 @@ const ChatPage = () => {
     setConversations(prev => prev.filter(c => c.id !== id))
     if (activeConv?.id === id) {
       setActiveConv(null)
+      setStarted(false)
       setMessages([])
     }
   }
@@ -109,7 +124,7 @@ const ChatPage = () => {
         </aside>
 
         <div style={s.chatArea}>
-          {!activeConv ? (
+          {!started ? (
             <div style={s.welcome}>
               <div style={s.welcomeIcon}>🤖</div>
               <h2 style={s.welcomeTitle}>ApexHub AI Assistant</h2>
@@ -120,7 +135,7 @@ const ChatPage = () => {
                   'Compare RTX 4070 vs RX 7800 XT',
                   'What RAM do I need for video editing?',
                 ].map(q => (
-                  <button key={q} style={s.suggBtn} onClick={() => { setInput(q) }}>
+                  <button key={q} style={s.suggBtn} onClick={() => setInput(q)}>
                     {q}
                   </button>
                 ))}
@@ -132,7 +147,10 @@ const ChatPage = () => {
                 <div key={msg.id} style={msg.role === 'user' ? s.userRow : s.aiRow}>
                   {msg.role === 'assistant' && <div style={s.aiAvatar}>AI</div>}
                   <div style={msg.role === 'user' ? s.userBubble : s.aiBubble}>
-                    {msg.content}
+                    {msg.role === 'assistant'
+                      ? <MarkdownContent content={msg.content} />
+                      : msg.content
+                    }
                   </div>
                 </div>
               ))}
@@ -194,7 +212,12 @@ const s = {
   aiRow: { display: 'flex', gap: '10px', alignItems: 'flex-start' },
   aiAvatar: { width: '32px', height: '32px', borderRadius: '50%', background: 'var(--accent)', color: '#fff', fontSize: '11px', fontWeight: '700', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: '2px' },
   userBubble: { background: 'var(--accent)', color: '#fff', borderRadius: '16px 16px 4px 16px', padding: '10px 16px', maxWidth: '65%', fontSize: '14px', lineHeight: '1.5' },
-  aiBubble: { background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '4px 16px 16px 16px', padding: '10px 16px', maxWidth: '65%', fontSize: '14px', lineHeight: '1.5' },
+  aiBubble: { background: 'var(--bg-card)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '4px 16px 16px 16px', padding: '12px 16px', maxWidth: '70%', fontSize: '14px', lineHeight: '1.6' },
+  markdownBody: {
+    fontSize: '14px',
+    lineHeight: '1.6',
+    color: 'var(--text-primary)',
+  },
   typing: { color: 'var(--text-muted)', fontStyle: 'italic' },
   inputBar: { padding: '16px 24px', borderTop: '1px solid var(--border)', display: 'flex', gap: '10px', background: 'var(--bg-secondary)' },
   input: { flex: 1, background: 'var(--bg-hover)', border: '1px solid var(--border)', borderRadius: '8px', padding: '11px 14px', color: 'var(--text-primary)', fontSize: '14px', outline: 'none' },

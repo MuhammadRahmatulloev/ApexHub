@@ -227,7 +227,7 @@ CHANNEL_LAYERS = {
 JAZZMIN_SETTINGS = {
     "site_title": "ApexHub Admin",
     "site_header": "ApexHub",
-    "site_brand": "⚡ ApexHub",
+    "site_brand": "ApexHub",
     "site_logo": None,
     "welcome_sign": "Welcome to ApexHub Admin Panel",
     "copyright": "ApexHub 2026",

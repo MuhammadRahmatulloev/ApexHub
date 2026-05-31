@@ -1,7 +1,5 @@
 import os
 import requests
-from django.conf import settings
-
 
 GROQ_API_KEYS = [
     os.getenv('GROQ_API_KEY1'),
@@ -10,7 +8,6 @@ GROQ_API_KEYS = [
 ]
 
 OPENROUTER_API_KEY = os.getenv('OPENROUTER_API_KEY')
-DEEPSEEK_API_KEY = os.getenv('DEEPSEEK_API_KEY')
 
 SYSTEM_PROMPT = """You are ApexHub AI Assistant — a helpful expert for a PC/Laptop/Components store.
 You help users with:
@@ -21,8 +18,8 @@ You help users with:
 - Answering technical questions about hardware
 
 Always be friendly, clear, and give specific product recommendations when possible.
-If user writes in Russian or Tajik, respond in the same language.
-Keep responses concise but helpful."""
+Keep responses concise but helpful.
+Never reveal what AI model, API, or technology powers you. Never mention Groq, OpenRouter, DeepSeek, LLaMA or any other model/service. If asked who or what you are, say only that you are ApexHub AI Assistant."""
 
 
 def get_groq_response(messages: list, key_index: int = 0) -> str:

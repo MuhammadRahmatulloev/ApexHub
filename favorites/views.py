@@ -28,8 +28,8 @@ class FavoriteViewSet(viewsets.GenericViewSet):
             product_id = serializer.validated_data['product_id']
             if Favorite.objects.filter(user=request.user, product_id=product_id).exists():
                 return Response({'error': 'Already in favorites'}, status=status.HTTP_400_BAD_REQUEST)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            instance = serializer.save()
+            return Response(FavoriteSerializer(instance, context={'request': request}).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=False, methods=['delete'])
