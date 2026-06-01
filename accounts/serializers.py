@@ -41,6 +41,8 @@ class LoginSerializer(serializers.Serializer):
 
 
 class UserProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.SerializerMethodField()
+
     class Meta:
         model = User
         fields = [
@@ -49,6 +51,14 @@ class UserProfileSerializer(serializers.ModelSerializer):
             'phone', 'created_at'
         ]
         read_only_fields = ['id', 'role', 'is_verified', 'created_at']
+
+    def get_avatar(self, obj):
+        if not obj.avatar:
+            return None
+        request = self.context.get('request')
+        if request:
+            return request.build_absolute_uri(obj.avatar.url)
+        return f'http://127.0.0.1:8000{obj.avatar.url}'
 
 
 class UserProfileUpdateSerializer(serializers.ModelSerializer):

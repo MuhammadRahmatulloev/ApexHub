@@ -19,6 +19,9 @@ import NewsPage from './pages/NewsPage'
 import NewsDetailPage from './pages/NewsDetailPage'
 import PaymentsPage from './pages/PaymentsPage'
 import LocationsPage from './pages/LocationsPage'
+import AdminNewsPage from './pages/AdminNewsPage'
+import AdminNewsForm from './pages/AdminNewsForm'
+import AdminProductPage from './pages/AdminProductPage'
 import './App.css'
 
 function App() {
@@ -45,6 +48,10 @@ function App() {
             <Route path="/news/:id" element={<NewsDetailPage />} />
             <Route path="/payments" element={<ProtectedRoute><PaymentsPage /></ProtectedRoute>} />
             <Route path="/locations" element={<LocationsPage />} />
+            <Route path="/admin/news" element={<ProtectedRoute><AdminNewsPage /></ProtectedRoute>} />
+            <Route path="/admin/news/create" element={<ProtectedRoute><AdminNewsForm /></ProtectedRoute>} />
+            <Route path="/admin/news/edit/:id" element={<ProtectedRoute><AdminNewsForm /></ProtectedRoute>} />
+            <Route path="/admin/products" element={<ProtectedRoute><AdminProductPage /></ProtectedRoute>} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AuthProvider>

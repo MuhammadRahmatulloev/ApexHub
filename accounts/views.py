@@ -171,9 +171,9 @@ class ProfileView(APIView):
     parser_classes = [MultiPartParser, FormParser, JSONParser]
 
     def get(self, request):
-        serializer = UserProfileSerializer(request.user)
+        serializer = UserProfileSerializer(request.user, context={'request': request})
         return Response(serializer.data)
-
+    
     def patch(self, request):
         serializer = UserProfileUpdateSerializer(
             request.user,
@@ -182,7 +182,7 @@ class ProfileView(APIView):
         )
         if serializer.is_valid():
             serializer.save()
-            return Response(UserProfileSerializer(request.user).data)
+            return Response(UserProfileSerializer(request.user, context={'request': request}).data)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 

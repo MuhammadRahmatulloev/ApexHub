@@ -38,7 +38,7 @@ const Navbar = () => {
   const adminLinks = [
     { to: '/', label: 'Home' },
     { to: '/products', label: 'Products' },
-    { to: '/seller', label: 'My Shop' },
+    { to: '/admin/products', label: 'My Shop' },
     { to: '/news', label: 'News' },
     { to: '/admin/news', label: 'Manage News' },
     { to: '/locations', label: 'Locations' },
