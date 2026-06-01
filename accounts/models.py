@@ -44,6 +44,13 @@ class User(AbstractUser):
     def is_client(self):
         return self.role == Role.CLIENT
 
+    def save(self, *args, **kwargs):
+        if self.is_superuser or self.is_staff:
+            self.role = Role.ADMIN
+            self.is_verified = True
+            self.is_active = True
+        super().save(*args, **kwargs)
+
 
 class VerificationCode(models.Model):
     user = models.ForeignKey(

@@ -5,6 +5,7 @@ from accounts.serializers import UserProfileSerializer
 
 class NewsSerializer(serializers.ModelSerializer):
     author = UserProfileSerializer(read_only=True)
+    image = serializers.ImageField(required=False, allow_null=True)
 
     class Meta:
         model = News
@@ -18,7 +19,15 @@ class NewsSerializer(serializers.ModelSerializer):
 
 class NewsListSerializer(serializers.ModelSerializer):
     author = UserProfileSerializer(read_only=True)
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = News
         fields = ['id', 'title', 'image', 'author', 'is_published', 'created_at']
+
+    def get_image(self, obj):
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+        return None

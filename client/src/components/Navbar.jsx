@@ -35,6 +35,15 @@ const Navbar = () => {
     { to: '/locations', label: 'Locations' },
   ]
 
+  const adminLinks = [
+    { to: '/', label: 'Home' },
+    { to: '/products', label: 'Products' },
+    { to: '/seller', label: 'My Shop' },
+    { to: '/news', label: 'News' },
+    { to: '/admin/news', label: 'Manage News' },
+    { to: '/locations', label: 'Locations' },
+  ]
+
   const guestLinks = [
     { to: '/', label: 'Home' },
     { to: '/products', label: 'Products' },
@@ -44,7 +53,8 @@ const Navbar = () => {
 
   const getLinks = () => {
     if (!user) return guestLinks
-    if (user.role === 'SELLER' || user.role === 'ADMIN') return sellerLinks
+    if (user.role === 'ADMIN') return adminLinks
+    if (user.role === 'SELLER') return sellerLinks
     return clientLinks
   }
 

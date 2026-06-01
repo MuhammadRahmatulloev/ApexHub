@@ -5,22 +5,41 @@ import api from '../api/axios'
 
 const FEATURES = [
   {
-    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M3 10l4 4 8-8"/><rect x="1" y="1" width="18" height="18" rx="4"/></svg>,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M3 10l4 4 8-8"/>
+        <rect x="1" y="1" width="18" height="18" rx="4"/>
+      </svg>
+    ),
     title: 'Fast Delivery',
     desc: '2-3 business days',
   },
   {
-    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><path d="M10 18s8-4 8-10V4l-8-3-8 3v4c0 6 8 10 8 10z"/></svg>,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M10 18s8-4 8-10V4l-8-3-8 3v4c0 6 8 10 8 10z"/>
+      </svg>
+    ),
     title: 'Warranty',
     desc: '1 year on all products',
   },
   {
-    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="2" width="18" height="14" rx="2"/><path d="M7 19h6M10 16v3"/></svg>,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="2" width="18" height="14" rx="2"/>
+        <path d="M7 19h6M10 16v3"/>
+      </svg>
+    ),
     title: 'AI Assistant',
     desc: 'Get expert advice',
   },
   {
-    icon: <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="4" width="18" height="13" rx="2"/><path d="M1 9h18"/></svg>,
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="4" width="18" height="13" rx="2"/>
+        <path d="M1 9h18"/>
+      </svg>
+    ),
     title: 'Secure Payment',
     desc: '100% protected',
   },
@@ -56,7 +75,9 @@ const ProductCard = ({ p }) => {
         <p style={s.cardName}>{p.name}</p>
         <div style={s.cardBottom}>
           <span style={s.cardPrice}>${p.price}</span>
-          {p.average_rating > 0 && <span style={s.cardRating}>{'★'.repeat(Math.round(p.average_rating))}</span>}
+          {p.average_rating > 0 && (
+            <span style={s.cardRating}>{'★'.repeat(Math.round(p.average_rating))}</span>
+          )}
         </div>
       </div>
     </Link>
@@ -75,12 +96,66 @@ const FeatCard = ({ f }) => {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
     >
-      <div style={{ ...s.featIcon, color: hovered ? 'var(--accent)' : 'var(--text-muted)' }}>{f.icon}</div>
+      <div style={{ ...s.featIcon, color: hovered ? 'var(--accent)' : 'var(--text-muted)' }}>
+        {f.icon}
+      </div>
       <p style={s.featTitle}>{f.title}</p>
       <p style={s.featDesc}>{f.desc}</p>
     </div>
   )
 }
+
+const CHIPS = [
+  {
+    key: 'cpu',
+    label: 'CPU',
+    style: { top: '14%', left: '8%', animationDelay: '0s', animationDuration: '3.5s' },
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round">
+        <rect x="4" y="4" width="14" height="14" rx="2"/>
+        <rect x="7" y="7" width="8" height="8" rx="1"/>
+        <path d="M8 1v3M14 1v3M8 18v3M14 18v3M1 8h3M1 14h3M18 8h3M18 14h3"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'gpu',
+    label: 'GPU',
+    style: { bottom: '14%', right: '8%', animationDelay: '0.9s', animationDuration: '4.2s' },
+    icon: (
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round">
+        <rect x="2" y="6" width="18" height="10" rx="2"/>
+        <circle cx="8" cy="11" r="2.2"/>
+        <circle cx="15" cy="11" r="2.2"/>
+        <path d="M6 3v3M10 3v3M14 3v3M18 3v3"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'ram',
+    label: 'RAM',
+    style: { top: '14%', right: '12%', animationDelay: '1.6s', animationDuration: '3.9s' },
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" strokeWidth="1.3" strokeLinecap="round">
+        <rect x="2" y="5" width="16" height="10" rx="1.5"/>
+        <path d="M5 8v4M8 8v4M11 8v4M14 8v4"/>
+        <path d="M5 2v3M8 2v3M11 2v3M14 2v3"/>
+      </svg>
+    ),
+  },
+  {
+    key: 'ssd',
+    label: 'SSD',
+    style: { bottom: '18%', left: '12%', animationDelay: '0.4s', animationDuration: '4.6s' },
+    icon: (
+      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" strokeWidth="1.3" strokeLinecap="round">
+        <rect x="2" y="4" width="16" height="12" rx="2"/>
+        <circle cx="14" cy="10" r="2.2"/>
+        <path d="M5 7h5M5 10h4M5 13h5"/>
+      </svg>
+    ),
+  },
+]
 
 const HomePage = () => {
   const [products, setProducts] = useState([])
@@ -107,29 +182,27 @@ const HomePage = () => {
     resize()
     window.addEventListener('resize', resize)
 
-    const nodes = Array.from({ length: 18 }, () => ({
+    const nodes = Array.from({ length: 22 }, () => ({
       x: Math.random() * canvas.width,
       y: Math.random() * canvas.height,
-      dx: (Math.random() - 0.5) * 0.5,
-      dy: (Math.random() - 0.5) * 0.5,
-      r: Math.random() * 1.8 + 0.5,
+      dx: (Math.random() - 0.5) * 0.45,
+      dy: (Math.random() - 0.5) * 0.45,
+      r: Math.random() * 1.6 + 0.5,
     }))
 
     const draw = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height)
       const isDark = document.documentElement.getAttribute('data-theme') !== 'light'
-      const nodeColor = isDark ? 'rgba(79,142,247,' : 'rgba(35,96,212,'
-      const lineColor = isDark ? 'rgba(79,142,247,' : 'rgba(35,96,212,'
+      const accent = isDark ? '79,142,247' : '35,96,212'
 
       nodes.forEach(n => {
         n.x += n.dx
         n.y += n.dy
         if (n.x < 0 || n.x > canvas.width) n.dx *= -1
         if (n.y < 0 || n.y > canvas.height) n.dy *= -1
-
         ctx.beginPath()
         ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2)
-        ctx.fillStyle = `${nodeColor}0.5)`
+        ctx.fillStyle = `rgba(${accent},0.45)`
         ctx.fill()
       })
 
@@ -137,13 +210,12 @@ const HomePage = () => {
         for (let j = i + 1; j < nodes.length; j++) {
           const dx = nodes[i].x - nodes[j].x
           const dy = nodes[i].y - nodes[j].y
-          const dist = Math.sqrt(dx * dx + dy * dy)
-          if (dist < 120) {
-            const alpha = (1 - dist / 120) * 0.18
+          const d = Math.sqrt(dx * dx + dy * dy)
+          if (d < 130) {
             ctx.beginPath()
             ctx.moveTo(nodes[i].x, nodes[i].y)
             ctx.lineTo(nodes[j].x, nodes[j].y)
-            ctx.strokeStyle = `${lineColor}${alpha})`
+            ctx.strokeStyle = `rgba(${accent},${(1 - d / 130) * 0.18})`
             ctx.lineWidth = 0.8
             ctx.stroke()
           }
@@ -152,7 +224,9 @@ const HomePage = () => {
 
       animRef.current = requestAnimationFrame(draw)
     }
+
     draw()
+
     return () => {
       cancelAnimationFrame(animRef.current)
       window.removeEventListener('resize', resize)
@@ -162,124 +236,167 @@ const HomePage = () => {
   return (
     <Layout>
       <style>{`
-        @keyframes floatMain { 0%,100%{transform:translate(-50%,-50%) translateY(0)} 50%{transform:translate(-50%,-50%) translateY(-10px)} }
-        @keyframes floatA { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-8px)} }
-        @keyframes floatB { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-6px)} }
-        @keyframes spinRing { from{transform:translate(-50%,-50%) rotate(0deg)} to{transform:translate(-50%,-50%) rotate(360deg)} }
-        @keyframes spinRingR { from{transform:translate(-50%,-50%) rotate(0deg)} to{transform:translate(-50%,-50%) rotate(-360deg)} }
-        @keyframes skeletonPulse { 0%,100%{opacity:.35} 50%{opacity:.7} }
-        @keyframes glowPulse { 0%,100%{opacity:.4} 50%{opacity:.8} }
-
-        .btn-primary {
-          background: var(--accent);
-          color: #fff;
-          padding: 11px 24px;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 700;
-          letter-spacing: .2px;
-          transition: background .15s, transform .15s, box-shadow .15s;
-          display: inline-block;
-          border: none;
-          cursor: pointer;
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(14px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .btn-primary:hover {
+        @keyframes floatMain {
+          0%, 100% { transform: translate(-50%, -50%) translateY(0px); }
+          50% { transform: translate(-50%, -50%) translateY(-10px); }
+        }
+        @keyframes floatChip {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-7px); }
+        }
+        @keyframes spinRing {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+        @keyframes spinRingR {
+          from { transform: translate(-50%, -50%) rotate(0deg); }
+          to { transform: translate(-50%, -50%) rotate(-360deg); }
+        }
+        @keyframes pulseGlow {
+          0%, 100% { opacity: 0.5; transform: translate(-50%, -50%) scale(1); }
+          50% { opacity: 1; transform: translate(-50%, -50%) scale(1.18); }
+        }
+        @keyframes skeletonPulse {
+          0%, 100% { opacity: 0.35; }
+          50% { opacity: 0.7; }
+        }
+
+        .hero-eyebrow {
+          opacity: 0; animation: fadeUp 0.5s 0.05s ease forwards;
+        }
+        .hero-title {
+          opacity: 0; animation: fadeUp 0.5s 0.15s ease forwards;
+        }
+        .hero-sub {
+          opacity: 0; animation: fadeUp 0.5s 0.25s ease forwards;
+        }
+        .hero-btns {
+          opacity: 0; animation: fadeUp 0.5s 0.35s ease forwards;
+        }
+        .hero-stats {
+          opacity: 0; animation: fadeUp 0.5s 0.45s ease forwards;
+        }
+
+        .orbit-chip {
+          position: absolute;
+          display: flex; align-items: center; justify-content: center;
+          border-radius: 10px;
+          background: var(--bg-card);
+          border: 1px solid var(--border);
+          animation: floatChip ease-in-out infinite;
+        }
+        .orbit-chip-inner { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+        .orbit-chip-label {
+          font-size: 9px; font-weight: 700; color: var(--accent);
+          letter-spacing: 0.5px;
+        }
+
+        .btn-primary-hero {
+          background: var(--accent); color: #fff; border: none;
+          border-radius: 8px; padding: 11px 22px; font-size: 13px;
+          font-weight: 700; cursor: pointer; letter-spacing: 0.2px;
+          transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+          display: inline-block; text-decoration: none;
+        }
+        .btn-primary-hero:hover {
           background: var(--accent-hover);
           transform: translateY(-2px);
           box-shadow: var(--shadow-btn);
         }
-        .btn-primary:active { transform: translateY(0); box-shadow: none; }
-
-        .btn-ghost {
-          background: transparent;
-          color: var(--accent);
-          padding: 11px 24px;
-          border-radius: 8px;
-          font-size: 13px;
-          font-weight: 600;
-          border: 1.5px solid var(--border);
-          transition: border-color .15s, background .15s, transform .15s, color .15s;
-          display: inline-block;
-          cursor: pointer;
+        .btn-ghost-hero {
+          background: transparent; color: var(--accent);
+          border: 1.5px solid var(--border); border-radius: 8px;
+          padding: 11px 22px; font-size: 13px; font-weight: 600;
+          cursor: pointer; transition: border-color 0.15s, background 0.15s, transform 0.15s;
+          display: inline-block; text-decoration: none;
         }
-        .btn-ghost:hover {
+        .btn-ghost-hero:hover {
           border-color: var(--accent);
           background: var(--accent-dim);
           transform: translateY(-2px);
         }
-        .btn-ghost:active { transform: translateY(0); }
 
         .link-view-all {
-          color: var(--accent);
-          font-size: 13px;
-          font-weight: 600;
-          transition: opacity .15s;
+          color: var(--accent); font-size: 13px; font-weight: 600;
+          transition: opacity 0.15s;
         }
-        .link-view-all:hover { opacity: .7; }
+        .link-view-all:hover { opacity: 0.7; }
       `}</style>
 
       <div style={s.hero}>
         <canvas ref={canvasRef} style={s.canvas} />
+
         <div style={s.heroLeft}>
-          <div style={s.eyebrow}>
+          <div className="hero-eyebrow" style={s.eyebrow}>
             <span style={s.eyebrowLine} />
             Premium PC Store
           </div>
-          <h1 style={s.heroTitle}>
+          <h1 className="hero-title" style={s.heroTitle}>
             Build Your<br />
             <span style={s.heroAccent}>Dream PC</span>
           </h1>
-          <p style={s.heroSub}>Laptops, desktops and components — all in one place</p>
-          <div style={s.heroBtns}>
-            <Link to="/products" className="btn-primary">Browse Products</Link>
-            <Link to="/builds" className="btn-ghost">AI PC Builder</Link>
+          <p className="hero-sub" style={s.heroSub}>
+            Laptops, desktops and components — all in one place. AI-powered builds.
+          </p>
+          <div className="hero-btns" style={s.heroBtns}>
+            <Link to="/products" className="btn-primary-hero">Browse Products</Link>
+            <Link to="/builds" className="btn-ghost-hero">AI PC Builder</Link>
+          </div>
+          <div className="hero-stats" style={s.heroStats}>
+            <div style={s.stat}>
+              <span style={s.statNum}>2.4K+</span>
+              <span style={s.statLabel}>Products</span>
+            </div>
+            <div style={s.statDivider} />
+            <div style={s.stat}>
+              <span style={s.statNum}>18K</span>
+              <span style={s.statLabel}>Orders</span>
+            </div>
+            <div style={s.statDivider} />
+            <div style={s.stat}>
+              <span style={s.statNum}>4.9★</span>
+              <span style={s.statLabel}>Rating</span>
+            </div>
           </div>
         </div>
 
         <div style={s.heroRight}>
-          <div style={s.orbitWrap}>
-            <div style={s.glowCircle} />
-            <svg style={s.ring1} viewBox="0 0 220 220" fill="none">
-              <circle cx="110" cy="110" r="100" stroke="var(--accent)" strokeWidth="0.6" strokeDasharray="5 10" opacity="0.25"/>
-            </svg>
-            <svg style={s.ring2} viewBox="0 0 150 150" fill="none">
-              <circle cx="75" cy="75" r="66" stroke="var(--accent)" strokeWidth="0.5" strokeDasharray="2 7" opacity="0.15"/>
-            </svg>
+          <div style={s.scene}>
+            <div style={s.ring1} />
+            <div style={s.ring2} />
+            <div style={s.glowCenter} />
 
-            <div style={s.mainDevice}>
-              <svg width="76" height="76" viewBox="0 0 76 76" fill="none" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4" y="8" width="68" height="46" rx="4" fill="var(--accent-dim)"/>
-                <path d="M24 60h28M38 54v6"/>
-                <rect x="12" y="16" width="22" height="16" rx="2" fill="var(--accent-dim)"/>
-                <rect x="42" y="16" width="22" height="7" rx="1.5" fill="var(--accent-dim)"/>
-                <rect x="42" y="27" width="16" height="5" rx="1.5" fill="var(--accent-dim)"/>
-                <path d="M12 40h22M12 46h14M42 40h22M42 46h14"/>
+            <div style={s.monitor}>
+              <svg width="92" height="76" viewBox="0 0 92 76" fill="none">
+                <rect x="2" y="2" width="88" height="56" rx="5" fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="1.5"/>
+                <rect x="10" y="10" width="28" height="20" rx="2" fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="1"/>
+                <rect x="44" y="10" width="36" height="9" rx="1.5" fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="1"/>
+                <rect x="44" y="23" width="28" height="7" rx="1.5" fill="var(--accent-dim)" stroke="var(--accent)" strokeWidth="0.8" strokeOpacity="0.5"/>
+                <path d="M10 38h28M10 46h18M44 38h36M44 46h24" stroke="var(--accent)" strokeWidth="1" strokeOpacity="0.4" strokeLinecap="round"/>
+                <path d="M34 66h24M46 58v8" stroke="var(--accent)" strokeWidth="1.5" strokeOpacity="0.5" strokeLinecap="round"/>
               </svg>
             </div>
 
-            <div style={{ ...s.orbitDot, top: '15%', left: '10%', animationDelay: '0s', animationDuration: '3.5s' }}>
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" strokeWidth="1.3" opacity="0.65">
-                <rect x="2" y="4" width="20" height="15" rx="2"/>
-                <path d="M7 19v2M17 19v2M4 21h16"/>
-              </svg>
-            </div>
-            <div style={{ ...s.orbitDot, bottom: '18%', right: '8%', animationDelay: '1s', animationDuration: '4.2s' }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--accent)" strokeWidth="1.3" opacity="0.5">
-                <rect x="4" y="1" width="12" height="18" rx="2"/>
-                <circle cx="10" cy="16" r="1.2"/>
-              </svg>
-            </div>
-            <div style={{ ...s.orbitDot, top: '18%', right: '14%', animationDelay: '2s', animationDuration: '5s' }}>
-              <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--accent)" strokeWidth="1.3" opacity="0.4">
-                <path d="M9 2l2 4.5H16l-4 3 1.5 5L9 12l-4.5 2.5 1.5-5-4-3H7z"/>
-              </svg>
-            </div>
-            <div style={{ ...s.orbitDot, bottom: '20%', left: '14%', animationDelay: '0.5s', animationDuration: '4.8s' }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="var(--accent)" strokeWidth="1.3" opacity="0.4">
-                <circle cx="8" cy="8" r="6"/>
-                <path d="M8 5v3l2 1.5"/>
-              </svg>
-            </div>
+            {CHIPS.map(chip => (
+              <div
+                key={chip.key}
+                className="orbit-chip"
+                style={{
+                  ...chip.style,
+                  width: chip.key === 'cpu' || chip.key === 'gpu' ? '54px' : '46px',
+                  height: chip.key === 'cpu' || chip.key === 'gpu' ? '54px' : '46px',
+                }}
+              >
+                <div className="orbit-chip-inner">
+                  {chip.icon}
+                  <span className="orbit-chip-label">{chip.label}</span>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>
@@ -309,7 +426,7 @@ const HomePage = () => {
       <div style={s.cta}>
         <h2 style={s.ctaTitle}>Ready to build your PC?</h2>
         <p style={s.ctaSub}>Let our AI assistant create the perfect build for your budget and needs</p>
-        <Link to="/builds" className="btn-primary">Start with AI Builder</Link>
+        <Link to="/builds" className="btn-primary-hero">Start with AI Builder</Link>
       </div>
     </Layout>
   )
@@ -324,9 +441,9 @@ const s = {
     borderRadius: '16px',
     overflow: 'hidden',
     marginBottom: '14px',
-    minHeight: '290px',
+    minHeight: '300px',
     position: 'relative',
-    animation: 'fadeInUp 0.4s ease both',
+    animation: 'fadeUp 0.4s ease both',
   },
   canvas: {
     position: 'absolute',
@@ -337,7 +454,7 @@ const s = {
     zIndex: 0,
   },
   heroLeft: {
-    padding: '44px 36px',
+    padding: '48px 40px',
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'center',
@@ -353,11 +470,11 @@ const s = {
     fontWeight: '700',
     letterSpacing: '2px',
     textTransform: 'uppercase',
-    marginBottom: '12px',
+    marginBottom: '14px',
   },
   eyebrowLine: {
     display: 'inline-block',
-    width: '18px',
+    width: '20px',
     height: '1.5px',
     background: 'var(--accent)',
     opacity: 0.7,
@@ -365,21 +482,56 @@ const s = {
   },
   heroTitle: {
     color: 'var(--text-primary)',
-    fontSize: '38px',
+    fontSize: '42px',
     fontWeight: '800',
-    lineHeight: '1.15',
+    lineHeight: '1.12',
     letterSpacing: '-0.5px',
-    marginBottom: '10px',
+    marginBottom: '12px',
   },
-  heroAccent: { color: 'var(--accent)' },
+  heroAccent: {
+    color: 'var(--accent)',
+  },
   heroSub: {
     color: 'var(--text-secondary)',
     fontSize: '13px',
-    lineHeight: '1.65',
-    marginBottom: '24px',
-    maxWidth: '270px',
+    lineHeight: '1.7',
+    marginBottom: '28px',
+    maxWidth: '280px',
   },
-  heroBtns: { display: 'flex', gap: '10px', flexWrap: 'wrap' },
+  heroBtns: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap',
+    marginBottom: '24px',
+  },
+  heroStats: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+  },
+  stat: {
+    display: 'flex',
+    flexDirection: 'column',
+  },
+  statNum: {
+    color: 'var(--text-primary)',
+    fontSize: '18px',
+    fontWeight: '800',
+    lineHeight: '1',
+  },
+  statLabel: {
+    color: 'var(--text-secondary)',
+    fontSize: '10px',
+    fontWeight: '600',
+    letterSpacing: '0.5px',
+    textTransform: 'uppercase',
+    marginTop: '2px',
+  },
+  statDivider: {
+    width: '1px',
+    height: '28px',
+    background: 'var(--border)',
+  },
   heroRight: {
     background: 'var(--bg-secondary)',
     borderLeft: '1px solid var(--border)',
@@ -390,56 +542,59 @@ const s = {
     overflow: 'hidden',
     zIndex: 1,
   },
-  orbitWrap: {
+  scene: {
     position: 'relative',
-    width: '220px',
-    height: '220px',
-  },
-  glowCircle: {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
-    width: '100px',
-    height: '100px',
-    borderRadius: '50%',
-    background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)',
-    animation: 'glowPulse 3s ease-in-out infinite',
-    pointerEvents: 'none',
+    width: '260px',
+    height: '260px',
   },
   ring1: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    width: '220px',
-    height: '220px',
-    animation: 'spinRing 20s linear infinite',
+    width: '240px',
+    height: '240px',
+    marginLeft: '-120px',
+    marginTop: '-120px',
+    borderRadius: '50%',
+    border: '1px dashed var(--accent)',
+    opacity: 0.15,
+    animation: 'spinRing 22s linear infinite',
   },
   ring2: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    width: '150px',
-    height: '150px',
-    animation: 'spinRingR 14s linear infinite',
+    width: '165px',
+    height: '165px',
+    marginLeft: '-82.5px',
+    marginTop: '-82.5px',
+    borderRadius: '50%',
+    border: '1px dashed var(--accent)',
+    opacity: 0.1,
+    animation: 'spinRingR 15s linear infinite',
   },
-  mainDevice: {
+  glowCenter: {
     position: 'absolute',
     top: '50%',
     left: '50%',
-    transform: 'translate(-50%, -50%)',
-    animation: 'floatMain 4s ease-in-out infinite',
+    width: '120px',
+    height: '120px',
+    borderRadius: '50%',
+    background: 'radial-gradient(circle, var(--accent-dim) 0%, transparent 70%)',
+    animation: 'pulseGlow 3s ease-in-out infinite',
   },
-  orbitDot: {
+  monitor: {
     position: 'absolute',
-    animation: 'floatA 3.5s ease-in-out infinite',
+    top: '50%',
+    left: '50%',
+    animation: 'floatMain 3.8s ease-in-out infinite',
   },
   features: {
     display: 'grid',
     gridTemplateColumns: 'repeat(4, 1fr)',
     gap: '10px',
     marginBottom: '28px',
-    animation: 'fadeInUp 0.4s ease 0.07s both',
+    animation: 'fadeUp 0.4s ease 0.07s both',
   },
   feat: {
     background: 'var(--bg-card)',
@@ -466,7 +621,7 @@ const s = {
   },
   section: {
     marginBottom: '20px',
-    animation: 'fadeInUp 0.4s ease 0.13s both',
+    animation: 'fadeUp 0.4s ease 0.13s both',
   },
   sectionHeader: {
     display: 'flex',
@@ -491,7 +646,10 @@ const s = {
     border: '1px solid var(--border)',
     animation: 'skeletonPulse 1.4s ease infinite',
   },
-  empty: { color: 'var(--text-secondary)', fontSize: '14px' },
+  empty: {
+    color: 'var(--text-secondary)',
+    fontSize: '14px',
+  },
   card: {
     background: 'var(--bg-card)',
     border: '1px solid var(--border)',
@@ -508,8 +666,14 @@ const s = {
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  img: { width: '100%', height: '100%', objectFit: 'cover' },
-  cardBody: { padding: '14px' },
+  img: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  cardBody: {
+    padding: '14px',
+  },
   cardBadge: {
     background: 'var(--accent-dim)',
     color: 'var(--accent)',
@@ -528,16 +692,27 @@ const s = {
     margin: '8px 0 10px',
     lineHeight: '1.4',
   },
-  cardBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
-  cardPrice: { color: 'var(--accent)', fontSize: '15px', fontWeight: '800' },
-  cardRating: { color: 'var(--warning)', fontSize: '11px' },
+  cardBottom: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  cardPrice: {
+    color: 'var(--accent)',
+    fontSize: '15px',
+    fontWeight: '800',
+  },
+  cardRating: {
+    color: 'var(--warning)',
+    fontSize: '11px',
+  },
   cta: {
     background: 'var(--bg-card)',
     border: '1px solid var(--border)',
     borderRadius: '16px',
     padding: '48px 40px',
     textAlign: 'center',
-    animation: 'fadeInUp 0.4s ease 0.18s both',
+    animation: 'fadeUp 0.4s ease 0.18s both',
   },
   ctaTitle: {
     color: 'var(--text-primary)',

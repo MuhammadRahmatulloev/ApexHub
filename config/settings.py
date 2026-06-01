@@ -152,7 +152,7 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
     ],
     'DEFAULT_PAGINATION_CLASS': 'products.pagination.CustomPagination',
-    'PAGE_SIZE': 10,
+    'PAGE_SIZE': 30,
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 

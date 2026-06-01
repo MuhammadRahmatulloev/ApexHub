@@ -1,7 +1,8 @@
-from rest_framework import status, generics
+from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.parsers import MultiPartParser, FormParser, JSONParser
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.utils import timezone
@@ -14,9 +15,12 @@ from .serializers import (
     RegisterSerializer,
     VerifyEmailSerializer,
     LoginSerializer,
-    UserProfileSerializer
+    UserProfileSerializer,
+    UserProfileUpdateSerializer,
+    ChangePasswordSerializer,
+    ForgotPasswordSerializer,
+    ResetPasswordSerializer,
 )
-from .tasks import send_verification_email
 
 User = get_user_model()
 
@@ -73,14 +77,10 @@ class VerifyEmailView(APIView):
         if serializer.is_valid():
             email = serializer.validated_data['email']
             code = serializer.validated_data['code']
-
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
-                return Response(
-                    {'error': 'User not found'},
-                    status=status.HTTP_404_NOT_FOUND
-                )
+                return Response({'error': 'User not found'}, status=status.HTTP_404_NOT_FOUND)
 
             verification = VerificationCode.objects.filter(
                 user=user,
@@ -90,10 +90,7 @@ class VerifyEmailView(APIView):
             ).last()
 
             if not verification:
-                return Response(
-                    {'error': 'Invalid or expired code'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+                return Response({'error': 'Invalid or expired code'}, status=status.HTTP_400_BAD_REQUEST)
 
             verification.is_used = True
             verification.save()
@@ -127,26 +124,16 @@ class LoginView(APIView):
         if serializer.is_valid():
             email = serializer.validated_data['email']
             password = serializer.validated_data['password']
-
             try:
                 user = User.objects.get(email=email)
             except User.DoesNotExist:
-                return Response(
-                    {'error': 'Invalid credentials'},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
+                return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
             if not user.check_password(password):
-                return Response(
-                    {'error': 'Invalid credentials'},
-                    status=status.HTTP_401_UNAUTHORIZED
-                )
+                return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
             if not user.is_verified:
-                return Response(
-                    {'error': 'Email not verified'},
-                    status=status.HTTP_403_FORBIDDEN
-                )
+                return Response({'error': 'Email not verified'}, status=status.HTTP_403_FORBIDDEN)
 
             refresh = RefreshToken.for_user(user)
             return Response({
@@ -175,19 +162,44 @@ class LogoutView(APIView):
             token.blacklist()
             return Response({'message': 'Logged out successfully'})
         except Exception:
-            return Response(
-                {'error': 'Invalid token'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({'error': 'Invalid token'}, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(tags=['auth'])
-class ProfileView(generics.RetrieveUpdateAPIView):
+class ProfileView(APIView):
     permission_classes = [IsAuthenticated]
-    serializer_class = UserProfileSerializer
+    parser_classes = [MultiPartParser, FormParser, JSONParser]
 
-    def get_object(self):
-        return self.request.user
+    def get(self, request):
+        serializer = UserProfileSerializer(request.user)
+        return Response(serializer.data)
+
+    def patch(self, request):
+        serializer = UserProfileUpdateSerializer(
+            request.user,
+            data=request.data,
+            partial=True
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response(UserProfileSerializer(request.user).data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@extend_schema(tags=['auth'])
+class ChangePasswordView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data)
+        if serializer.is_valid():
+            user = request.user
+            if not user.check_password(serializer.validated_data['old_password']):
+                return Response({'error': 'Wrong current password'}, status=status.HTTP_400_BAD_REQUEST)
+            user.set_password(serializer.validated_data['new_password'])
+            user.save()
+            return Response({'message': 'Password changed successfully'})
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 @extend_schema(tags=['auth'])
@@ -203,23 +215,71 @@ class BecomeSellerView(APIView):
     )
     def post(self, request):
         user = request.user
-
         if user.role == 'SELLER':
-            return Response(
-                {'error': 'You are already a seller'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        
+            return Response({'error': 'You are already a seller'}, status=status.HTTP_400_BAD_REQUEST)
         if user.role == 'ADMIN':
-            return Response(
-                {'error': 'Admin cannot become a seller'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
+            return Response({'error': 'Admin cannot become a seller'}, status=status.HTTP_400_BAD_REQUEST)
         user.role = 'SELLER'
         user.save()
-
         return Response({
             'message': 'Congratulations! You are now a seller',
             'user': UserProfileSerializer(user).data
         })
+
+
+@extend_schema(tags=['auth'])
+class ForgotPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(request=ForgotPasswordSerializer)
+    def post(self, request):
+        serializer = ForgotPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        email = serializer.validated_data['email']
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'message': 'If this email exists, a reset code has been sent.'})
+        code = str(random.randint(100000, 999999))
+        VerificationCode.objects.create(user=user, code=code)
+        from django.core.mail import send_mail
+        send_mail(
+            subject='ApexHub - Password Reset',
+            message=f'Your password reset code: {code}\n\nExpires in 10 minutes.',
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            fail_silently=True,
+        )
+        return Response({'message': 'If this email exists, a reset code has been sent.'})
+
+
+@extend_schema(tags=['auth'])
+class ResetPasswordView(APIView):
+    permission_classes = [AllowAny]
+
+    @extend_schema(request=ResetPasswordSerializer)
+    def post(self, request):
+        serializer = ResetPasswordSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        email = serializer.validated_data['email']
+        code = serializer.validated_data['code']
+        new_password = serializer.validated_data['new_password']
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
+            return Response({'error': 'Invalid code'}, status=status.HTTP_400_BAD_REQUEST)
+        verification = VerificationCode.objects.filter(
+            user=user,
+            code=code,
+            is_used=False,
+            created_at__gte=timezone.now() - timedelta(minutes=10)
+        ).last()
+        if not verification:
+            return Response({'error': 'Invalid or expired code'}, status=status.HTTP_400_BAD_REQUEST)
+        verification.is_used = True
+        verification.save()
+        user.set_password(new_password)
+        user.save()
+        return Response({'message': 'Password reset successfully'})

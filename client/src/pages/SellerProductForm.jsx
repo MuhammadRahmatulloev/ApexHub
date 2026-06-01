@@ -83,7 +83,6 @@ const SellerProductForm = () => {
     const previews = files.map(f => URL.createObjectURL(f))
     setNewImages(prev => [...prev, ...files])
     setNewImagePreviews(prev => [...prev, ...previews])
-    // reset input so same file can be selected again
     e.target.value = ''
   }
 
@@ -105,7 +104,6 @@ const SellerProductForm = () => {
     setSuccess('')
 
     try {
-      // Step 1: Create / update product as JSON
       const payload = {
         ...form,
         price: parseFloat(form.price),
@@ -120,11 +118,9 @@ const SellerProductForm = () => {
         await api.patch(`/products/${id}/`, payload)
       } else {
         const res = await api.post('/products/', payload)
-        productId = res.data.id  // number from JSON response
+        productId = res.data.id
       }
 
-      // Step 2: Upload images using action endpoint /products/{id}/upload_image/
-      // This avoids the "product" field problem — the product ID is in the URL
       for (let i = 0; i < newImages.length; i++) {
         const formData = new FormData()
         formData.append('image', newImages[i])
@@ -134,7 +130,6 @@ const SellerProductForm = () => {
         })
       }
 
-      // Step 3: Delete removed images
       for (const imgId of removedImageIds) {
         await api.delete(`/products/${productId}/delete_image/?image_id=${imgId}`).catch(() => {})
       }
@@ -153,43 +148,230 @@ const SellerProductForm = () => {
     setLoading(false)
   }
 
-  if (fetching) return <Layout><p style={{ color: '#888' }}>Loading...</p></Layout>
+  if (fetching) {
+    return (
+      <Layout>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', maxWidth: '900px', margin: '0 auto' }}>
+          {[1,2,3].map(i => (
+            <div key={i} style={{ height: '80px', borderRadius: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)', animation: 'skeletonPulse 1.4s ease infinite' }} />
+          ))}
+        </div>
+        <style>{`@keyframes skeletonPulse { 0%,100%{opacity:.4} 50%{opacity:.8} }`}</style>
+      </Layout>
+    )
+  }
 
   const totalImages = existingImages.length + newImages.length
 
   return (
     <Layout>
-      <div style={s.container}>
-        <div style={s.header}>
-          <button style={s.backBtn} onClick={() => navigate('/seller')}>← Back</button>
-          <h1 style={s.title}>{isEdit ? 'Edit Product' : 'Create Product'}</h1>
+      <style>{`
+        @keyframes fadeUp {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .form-input {
+          width: 100%;
+          background: var(--bg-hover);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 10px 14px;
+          color: var(--text-primary);
+          font-size: 14px;
+          outline: none;
+          font-family: inherit;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+        }
+        .form-input:focus {
+          border-color: var(--accent);
+        }
+        .form-input::placeholder {
+          color: var(--text-secondary);
+        }
+        .form-textarea {
+          width: 100%;
+          background: var(--bg-hover);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 10px 14px;
+          color: var(--text-primary);
+          font-size: 14px;
+          outline: none;
+          font-family: inherit;
+          resize: vertical;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+        }
+        .form-textarea:focus {
+          border-color: var(--accent);
+        }
+        .form-textarea::placeholder {
+          color: var(--text-secondary);
+        }
+        .form-select {
+          width: 100%;
+          background: var(--bg-hover);
+          border: 1px solid var(--border);
+          border-radius: 8px;
+          padding: 10px 14px;
+          color: var(--text-primary);
+          font-size: 14px;
+          outline: none;
+          font-family: inherit;
+          cursor: pointer;
+          transition: border-color 0.15s;
+          box-sizing: border-box;
+        }
+        .form-select:focus {
+          border-color: var(--accent);
+        }
+        .upload-zone {
+          width: 100px;
+          height: 100px;
+          border-radius: 10px;
+          border: 2px dashed var(--border);
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          gap: 4px;
+          cursor: pointer;
+          flex-shrink: 0;
+          transition: border-color 0.15s, background 0.15s;
+        }
+        .upload-zone:hover {
+          border-color: var(--accent);
+          background: var(--accent-dim);
+        }
+        .img-remove-btn {
+          position: absolute;
+          top: 5px;
+          right: 5px;
+          width: 20px;
+          height: 20px;
+          border-radius: 50%;
+          background: rgba(0,0,0,0.65);
+          border: none;
+          color: #fff;
+          font-size: 10px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: background 0.15s;
+        }
+        .img-remove-btn:hover {
+          background: var(--danger);
+        }
+        .cancel-btn {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+          border-radius: 8px;
+          padding: 10px 22px;
+          font-size: 14px;
+          font-weight: 500;
+          cursor: pointer;
+          font-family: inherit;
+          transition: border-color 0.15s, color 0.15s;
+        }
+        .cancel-btn:hover {
+          border-color: var(--border-hover);
+          color: var(--text-primary);
+        }
+        .submit-btn {
+          background: var(--accent);
+          color: #fff;
+          border: none;
+          border-radius: 8px;
+          padding: 10px 26px;
+          font-size: 14px;
+          font-weight: 700;
+          cursor: pointer;
+          font-family: inherit;
+          transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+          letter-spacing: 0.2px;
+        }
+        .submit-btn:hover:not(:disabled) {
+          background: var(--accent-hover);
+          transform: translateY(-1px);
+          box-shadow: var(--shadow-btn);
+        }
+        .submit-btn:disabled {
+          background: var(--text-muted);
+          cursor: not-allowed;
+        }
+        .back-btn {
+          background: transparent;
+          border: 1px solid var(--border);
+          color: var(--text-secondary);
+          border-radius: 7px;
+          padding: 6px 14px;
+          font-size: 13px;
+          cursor: pointer;
+          font-family: inherit;
+          transition: border-color 0.15s, color 0.15s;
+        }
+        .back-btn:hover {
+          border-color: var(--border-hover);
+          color: var(--text-primary);
+        }
+      `}</style>
+
+      <div style={s.wrap}>
+        <div style={s.topBar}>
+          <button className="back-btn" onClick={() => navigate('/seller')}>← Back</button>
+          <h1 style={s.title}>{isEdit ? 'Edit Product' : 'New Product'}</h1>
         </div>
 
-        {error && <div style={s.error}>{error}</div>}
-        {success && <div style={s.success}>{success}</div>}
+        {error && <div style={s.errorBox}>{error}</div>}
+        {success && <div style={s.successBox}>{success}</div>}
 
-        <form onSubmit={handleSubmit} style={s.form}>
+        <form onSubmit={handleSubmit}>
           <div style={s.grid}>
-            <div style={s.section}>
-              <h2 style={s.sectionTitle}>Basic Info</h2>
+            <div style={s.card}>
+              <p style={s.cardTitle}>Basic Info</p>
+
               <div style={s.field}>
                 <label style={s.label}>Product Name</label>
-                <input style={s.input} name="name" placeholder="e.g. Gaming Laptop RTX 4070"
-                  value={form.name} onChange={handleNameChange} required />
+                <input
+                  className="form-input"
+                  name="name"
+                  placeholder="e.g. Gaming Laptop RTX 4070"
+                  value={form.name}
+                  onChange={handleNameChange}
+                  required
+                />
               </div>
+
               <div style={s.field}>
                 <label style={s.label}>Slug</label>
-                <input style={s.input} name="slug" placeholder="auto-generated"
-                  value={form.slug} onChange={handleChange} required />
+                <input
+                  className="form-input"
+                  name="slug"
+                  placeholder="auto-generated"
+                  value={form.slug}
+                  onChange={handleChange}
+                  required
+                />
               </div>
+
               <div style={s.field}>
                 <label style={s.label}>Description</label>
-                <textarea style={s.textarea} name="description" placeholder="Describe your product..."
-                  value={form.description} onChange={handleChange} rows={4} />
+                <textarea
+                  className="form-textarea"
+                  name="description"
+                  placeholder="Describe your product..."
+                  value={form.description}
+                  onChange={handleChange}
+                  rows={4}
+                />
               </div>
+
               <div style={s.field}>
                 <label style={s.label}>Product Type</label>
-                <select style={s.select} name="product_type" value={form.product_type} onChange={handleChange}>
+                <select className="form-select" name="product_type" value={form.product_type} onChange={handleChange}>
                   <option value="LAPTOP">Laptop</option>
                   <option value="PC">PC</option>
                   <option value="COMPONENT">Component</option>
@@ -198,83 +380,124 @@ const SellerProductForm = () => {
               </div>
             </div>
 
-            <div style={s.section}>
-              <h2 style={s.sectionTitle}>Pricing & Stock</h2>
+            <div style={s.card}>
+              <p style={s.cardTitle}>Pricing & Stock</p>
+
               <div style={s.field}>
                 <label style={s.label}>Price ($)</label>
-                <input style={s.input} name="price" type="number" step="0.01" min="0"
-                  placeholder="0.00" value={form.price} onChange={handleChange} required />
+                <input
+                  className="form-input"
+                  name="price"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="0.00"
+                  value={form.price}
+                  onChange={handleChange}
+                  required
+                />
               </div>
+
               <div style={s.field}>
                 <label style={s.label}>Stock</label>
-                <input style={s.input} name="stock" type="number" min="0"
-                  placeholder="0" value={form.stock} onChange={handleChange} required />
+                <input
+                  className="form-input"
+                  name="stock"
+                  type="number"
+                  min="0"
+                  placeholder="0"
+                  value={form.stock}
+                  onChange={handleChange}
+                  required
+                />
               </div>
+
               <div style={s.field}>
                 <label style={s.label}>Category</label>
-                <select style={s.select} name="category" value={form.category} onChange={handleChange}>
+                <select className="form-select" name="category" value={form.category} onChange={handleChange}>
                   <option value="">No category</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
+
               <div style={s.field}>
                 <label style={s.label}>Brand</label>
-                <select style={s.select} name="brand" value={form.brand} onChange={handleChange}>
+                <select className="form-select" name="brand" value={form.brand} onChange={handleChange}>
                   <option value="">No brand</option>
                   {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
-              <div style={s.checkboxRow}>
-                <input type="checkbox" id="is_available" name="is_available"
-                  checked={form.is_available} onChange={handleChange} style={s.checkbox} />
-                <label htmlFor="is_available" style={s.checkboxLabel}>Available for purchase</label>
+
+              <div style={s.checkRow}>
+                <div
+                  style={{
+                    ...s.toggle,
+                    background: form.is_available ? 'var(--accent)' : 'var(--bg-hover)',
+                    border: `1px solid ${form.is_available ? 'var(--accent)' : 'var(--border)'}`,
+                  }}
+                  onClick={() => setForm(prev => ({ ...prev, is_available: !prev.is_available }))}
+                >
+                  <div style={{
+                    ...s.toggleThumb,
+                    transform: form.is_available ? 'translateX(18px)' : 'translateX(2px)',
+                  }} />
+                </div>
+                <span style={s.checkLabel}>Available for purchase</span>
               </div>
             </div>
           </div>
 
-          {/* Images */}
-          <div style={s.imagesSection}>
-            <div style={s.imagesSectionHeader}>
-              <h2 style={s.sectionTitle}>Product Images</h2>
-              <span style={s.imageCount}>{totalImages} image{totalImages !== 1 ? 's' : ''}</span>
+          <div style={s.card}>
+            <div style={s.imgHeader}>
+              <p style={s.cardTitle}>Product Images</p>
+              <span style={s.imgCount}>{totalImages} image{totalImages !== 1 ? 's' : ''}</span>
             </div>
 
-            <div style={s.imagesGrid}>
-              {existingImages.map((img) => (
-                <div key={img.id} style={s.imageThumb}>
+            <div style={s.imgGrid}>
+              {existingImages.map(img => (
+                <div key={img.id} style={s.imgThumb}>
                   <img src={img.image} alt="" style={s.thumbImg} />
                   {img.is_main && <span style={s.mainBadge}>Main</span>}
-                  <button type="button" style={s.removeImgBtn}
-                    onClick={() => removeExistingImage(img.id)}>✕</button>
+                  <button type="button" className="img-remove-btn" onClick={() => removeExistingImage(img.id)}>✕</button>
                 </div>
               ))}
 
               {newImagePreviews.map((preview, i) => (
-                <div key={`new-${i}`} style={s.imageThumb}>
+                <div key={`new-${i}`} style={s.imgThumb}>
                   <img src={preview} alt="" style={s.thumbImg} />
                   {existingImages.length === 0 && i === 0 && <span style={s.mainBadge}>Main</span>}
                   <span style={s.newBadge}>New</span>
-                  <button type="button" style={s.removeImgBtn}
-                    onClick={() => removeNewImage(i)}>✕</button>
+                  <button type="button" className="img-remove-btn" onClick={() => removeNewImage(i)}>✕</button>
                 </div>
               ))}
 
-              <div style={s.uploadBox} onClick={() => fileInputRef.current?.click()}>
-                <span style={s.uploadIcon}>📷</span>
-                <span style={s.uploadText}>Add Images</span>
-                <span style={s.uploadSub}>Click to browse</span>
+              <div className="upload-zone" onClick={() => fileInputRef.current?.click()}>
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round">
+                  <rect x="1" y="3" width="18" height="14" rx="3"/>
+                  <circle cx="7" cy="9" r="1.8"/>
+                  <path d="M1 14l4.5-4.5 3 3 3-3 4.5 4.5"/>
+                </svg>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '600' }}>Add Photo</span>
               </div>
             </div>
 
-            <input ref={fileInputRef} type="file" accept="image/*" multiple
-              style={{ display: 'none' }} onChange={handleImageSelect} />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              style={{ display: 'none' }}
+              onChange={handleImageSelect}
+            />
 
-            <p style={s.imageHint}>💡 First image will be the main image. JPG, PNG, WebP supported.</p>
+            <p style={s.imgHint}>First image will be the main image. JPG, PNG, WebP supported.</p>
           </div>
 
-          <div style={s.actions}>
-            <button type="button" style={s.cancelBtn} onClick={() => navigate('/seller')}>Cancel</button>
-            <button type="submit" style={loading ? s.submitBtnDisabled : s.submitBtn} disabled={loading}>
+          <div style={s.formActions}>
+            <button type="button" className="cancel-btn" onClick={() => navigate('/seller')}>
+              Cancel
+            </button>
+            <button type="submit" className="submit-btn" disabled={loading}>
               {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Product'}
             </button>
           </div>
@@ -285,42 +508,165 @@ const SellerProductForm = () => {
 }
 
 const s = {
-  container: { maxWidth: '900px', margin: '0 auto' },
-  header: { display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '24px' },
-  backBtn: { background: 'transparent', border: '1px solid #3a3a3a', color: '#888', borderRadius: '8px', padding: '7px 14px', fontSize: '13px', cursor: 'pointer' },
-  title: { color: '#fff', fontSize: '24px', fontWeight: '700' },
-  error: { background: 'rgba(229,62,62,0.1)', border: '1px solid rgba(229,62,62,0.3)', color: '#e53e3e', borderRadius: '8px', padding: '10px 14px', marginBottom: '20px', fontSize: '14px' },
-  success: { background: 'rgba(72,187,120,0.1)', border: '1px solid rgba(72,187,120,0.3)', color: '#48bb78', borderRadius: '8px', padding: '10px 14px', marginBottom: '20px', fontSize: '14px' },
-  form: {},
-  grid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px', marginBottom: '20px' },
-  section: { background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '16px' },
-  sectionTitle: { color: '#fff', fontSize: '16px', fontWeight: '600', marginBottom: '4px' },
-  field: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  label: { color: '#888', fontSize: '13px', fontWeight: '500' },
-  input: { background: '#2a2a2a', border: '1px solid #3a3a3a', borderRadius: '8px', padding: '10px 14px', color: '#fff', fontSize: '14px', outline: 'none' },
-  textarea: { background: '#2a2a2a', border: '1px solid #3a3a3a', borderRadius: '8px', padding: '10px 14px', color: '#fff', fontSize: '14px', outline: 'none', resize: 'vertical' },
-  select: { background: '#2a2a2a', border: '1px solid #3a3a3a', borderRadius: '8px', padding: '10px 14px', color: '#fff', fontSize: '14px', outline: 'none' },
-  checkboxRow: { display: 'flex', alignItems: 'center', gap: '10px' },
-  checkbox: { width: '16px', height: '16px', cursor: 'pointer' },
-  checkboxLabel: { color: '#ccc', fontSize: '14px', cursor: 'pointer' },
-  imagesSection: { background: '#1a1a1a', border: '1px solid #2a2a2a', borderRadius: '12px', padding: '24px', marginBottom: '20px' },
-  imagesSectionHeader: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '16px' },
-  imageCount: { color: '#888', fontSize: '13px' },
-  imagesGrid: { display: 'flex', flexWrap: 'wrap', gap: '12px', marginBottom: '12px' },
-  imageThumb: { position: 'relative', width: '110px', height: '110px', borderRadius: '10px', overflow: 'hidden', border: '1px solid #3a3a3a', flexShrink: 0 },
-  thumbImg: { width: '100%', height: '100%', objectFit: 'cover' },
-  mainBadge: { position: 'absolute', top: '6px', left: '6px', background: '#e53e3e', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '4px' },
-  newBadge: { position: 'absolute', bottom: '6px', left: '6px', background: '#2a6496', color: '#fff', fontSize: '10px', fontWeight: '700', padding: '2px 7px', borderRadius: '4px' },
-  removeImgBtn: { position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.7)', border: 'none', color: '#fff', width: '22px', height: '22px', borderRadius: '50%', fontSize: '11px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' },
-  uploadBox: { width: '110px', height: '110px', borderRadius: '10px', border: '2px dashed #3a3a3a', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '4px', cursor: 'pointer', flexShrink: 0 },
-  uploadIcon: { fontSize: '22px' },
-  uploadText: { color: '#ccc', fontSize: '12px', fontWeight: '600' },
-  uploadSub: { color: '#555', fontSize: '10px' },
-  imageHint: { color: '#555', fontSize: '12px' },
-  actions: { display: 'flex', justifyContent: 'flex-end', gap: '12px' },
-  cancelBtn: { background: 'transparent', border: '1px solid #3a3a3a', color: '#888', borderRadius: '8px', padding: '11px 24px', fontSize: '14px', cursor: 'pointer' },
-  submitBtn: { background: '#e53e3e', color: '#fff', border: 'none', borderRadius: '8px', padding: '11px 28px', fontSize: '14px', fontWeight: '600', cursor: 'pointer' },
-  submitBtnDisabled: { background: '#555', color: '#888', border: 'none', borderRadius: '8px', padding: '11px 28px', fontSize: '14px', cursor: 'not-allowed' },
+  wrap: {
+    maxWidth: '900px',
+    margin: '0 auto',
+    animation: 'fadeUp 0.35s ease both',
+  },
+  topBar: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '16px',
+    marginBottom: '24px',
+  },
+  title: {
+    color: 'var(--text-primary)',
+    fontSize: '22px',
+    fontWeight: '700',
+    letterSpacing: '-0.2px',
+  },
+  errorBox: {
+    background: 'rgba(248,113,113,0.08)',
+    border: '1px solid rgba(248,113,113,0.25)',
+    color: 'var(--danger)',
+    borderRadius: '8px',
+    padding: '10px 14px',
+    marginBottom: '20px',
+    fontSize: '13px',
+  },
+  successBox: {
+    background: 'rgba(52,211,153,0.08)',
+    border: '1px solid rgba(52,211,153,0.25)',
+    color: 'var(--success)',
+    borderRadius: '8px',
+    padding: '10px 14px',
+    marginBottom: '20px',
+    fontSize: '13px',
+  },
+  grid: {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '16px',
+    marginBottom: '16px',
+  },
+  card: {
+    background: 'var(--bg-card)',
+    border: '1px solid var(--border)',
+    borderRadius: '12px',
+    padding: '22px',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px',
+    marginBottom: '16px',
+  },
+  cardTitle: {
+    color: 'var(--text-primary)',
+    fontSize: '14px',
+    fontWeight: '600',
+    marginBottom: '2px',
+  },
+  field: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+  },
+  label: {
+    color: 'var(--text-secondary)',
+    fontSize: '12px',
+    fontWeight: '500',
+  },
+  checkRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+  },
+  toggle: {
+    width: '38px',
+    height: '22px',
+    borderRadius: '11px',
+    cursor: 'pointer',
+    position: 'relative',
+    transition: 'background 0.2s, border 0.2s',
+    flexShrink: 0,
+  },
+  toggleThumb: {
+    position: 'absolute',
+    top: '3px',
+    width: '14px',
+    height: '14px',
+    borderRadius: '50%',
+    background: '#fff',
+    transition: 'transform 0.2s',
+    boxShadow: '0 1px 4px rgba(0,0,0,0.3)',
+  },
+  checkLabel: {
+    color: 'var(--text-secondary)',
+    fontSize: '13px',
+  },
+  imgHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: '-4px',
+  },
+  imgCount: {
+    color: 'var(--text-secondary)',
+    fontSize: '12px',
+  },
+  imgGrid: {
+    display: 'flex',
+    flexWrap: 'wrap',
+    gap: '10px',
+  },
+  imgThumb: {
+    position: 'relative',
+    width: '100px',
+    height: '100px',
+    borderRadius: '10px',
+    overflow: 'hidden',
+    border: '1px solid var(--border)',
+    flexShrink: 0,
+  },
+  thumbImg: {
+    width: '100%',
+    height: '100%',
+    objectFit: 'cover',
+  },
+  mainBadge: {
+    position: 'absolute',
+    top: '5px',
+    left: '5px',
+    background: 'var(--accent)',
+    color: '#fff',
+    fontSize: '9px',
+    fontWeight: '700',
+    padding: '2px 6px',
+    borderRadius: '4px',
+    textTransform: 'uppercase',
+    letterSpacing: '0.3px',
+  },
+  newBadge: {
+    position: 'absolute',
+    bottom: '5px',
+    left: '5px',
+    background: 'rgba(0,0,0,0.6)',
+    color: '#fff',
+    fontSize: '9px',
+    fontWeight: '700',
+    padding: '2px 6px',
+    borderRadius: '4px',
+  },
+  imgHint: {
+    color: 'var(--text-muted)',
+    fontSize: '11px',
+    marginTop: '-4px',
+  },
+  formActions: {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '10px',
+    paddingTop: '4px',
+  },
 }
 
 export default SellerProductForm
