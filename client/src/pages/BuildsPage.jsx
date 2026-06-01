@@ -8,7 +8,7 @@ const BuildsPage = () => {
   const [prompt, setPrompt] = useState('')
   const [budget, setBudget] = useState('')
   const [generating, setGenerating] = useState(false)
-  const [tab, setTab] = useState('my') // 'my' | 'ai'
+  const [tab, setTab] = useState('my')
 
   useEffect(() => {
     api.get('/builds/my_builds/')

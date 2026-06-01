@@ -14,6 +14,11 @@ import BuildsPage from './pages/BuildsPage'
 import ChatPage from './pages/ChatPage'
 import SellerPage from './pages/SellerPage'
 import SellerProductForm from './pages/SellerProductForm'
+import FavoritesPage from './pages/FavoritesPage'
+import NewsPage from './pages/NewsPage'
+import NewsDetailPage from './pages/NewsDetailPage'
+import PaymentsPage from './pages/PaymentsPage'
+import LocationsPage from './pages/LocationsPage'
 import './App.css'
 
 function App() {
@@ -35,6 +40,11 @@ function App() {
             <Route path="/seller" element={<ProtectedRoute><SellerPage /></ProtectedRoute>} />
             <Route path="/seller/create" element={<ProtectedRoute><SellerProductForm /></ProtectedRoute>} />
             <Route path="/seller/edit/:id" element={<ProtectedRoute><SellerProductForm /></ProtectedRoute>} />
+            <Route path="/favorites" element={<ProtectedRoute><FavoritesPage /></ProtectedRoute>} />
+            <Route path="/news" element={<NewsPage />} />
+            <Route path="/news/:id" element={<NewsDetailPage />} />
+            <Route path="/payments" element={<ProtectedRoute><PaymentsPage /></ProtectedRoute>} />
+            <Route path="/locations" element={<LocationsPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AuthProvider>
