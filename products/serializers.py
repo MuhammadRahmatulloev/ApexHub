@@ -32,6 +32,16 @@ class ProductSpecificationSerializer(serializers.ModelSerializer):
         fields = ['id', 'key', 'value']
 
 
+class ProductLocationSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    address = serializers.CharField()
+    lat = serializers.FloatField()
+    lng = serializers.FloatField()
+    phone = serializers.CharField()
+    work_hours = serializers.CharField()
+
+
 class ProductListSerializer(serializers.ModelSerializer):
     category = CategorySerializer(read_only=True)
     brand = BrandSerializer(read_only=True)
@@ -62,6 +72,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
     images = ProductImageSerializer(many=True, read_only=True)
     specifications = ProductSpecificationSerializer(many=True, read_only=True)
     seller_name = serializers.CharField(source='seller.username', read_only=True)
+    location = ProductLocationSerializer(read_only=True)
 
     class Meta:
         model = Product
@@ -70,7 +81,8 @@ class ProductDetailSerializer(serializers.ModelSerializer):
             'product_type', 'price', 'stock',
             'is_available', 'average_rating', 'total_reviews',
             'category', 'brand', 'images', 'specifications',
-            'seller_name', 'created_at', 'updated_at'
+            'seller_name', 'location',
+            'created_at', 'updated_at'
         ]
 
 
@@ -79,9 +91,15 @@ class ProductCreateSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'id', 'name', 'slug', 'description', 'product_type',
-            'price', 'stock', 'is_available', 'category', 'brand'
+            'price', 'stock', 'is_available', 'category', 'brand', 'location'
         ]
         read_only_fields = ['id']
+
+    def validate_location(self, value):
+        if value and self.context['request'].user != value.seller:
+            if self.context['request'].user.role != 'ADMIN':
+                raise serializers.ValidationError('You can only assign your own locations.')
+        return value
 
     def create(self, validated_data):
         validated_data['seller'] = self.context['request'].user

@@ -52,6 +52,13 @@ class Product(models.Model):
         blank=True,
         related_name='products'
     )
+    location = models.ForeignKey(
+        'locations.SellerLocation',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='products'
+    )
     name = models.CharField(max_length=255)
     slug = models.SlugField(unique=True)
     description = models.TextField(blank=True)
