@@ -22,6 +22,7 @@ import LocationsPage from './pages/LocationsPage'
 import AdminNewsPage from './pages/AdminNewsPage'
 import AdminNewsForm from './pages/AdminNewsForm'
 import AdminProductPage from './pages/AdminProductPage'
+import SupportPage from './pages/SupportPage'
 import './App.css'
 
 function App() {
@@ -52,6 +53,7 @@ function App() {
             <Route path="/admin/news/create" element={<ProtectedRoute><AdminNewsForm /></ProtectedRoute>} />
             <Route path="/admin/news/edit/:id" element={<ProtectedRoute><AdminNewsForm /></ProtectedRoute>} />
             <Route path="/admin/products" element={<ProtectedRoute><AdminProductPage /></ProtectedRoute>} />
+            <Route path="/support" element={<SupportPage />} />
             <Route path="*" element={<Navigate to="/" />} />
           </Routes>
         </AuthProvider>

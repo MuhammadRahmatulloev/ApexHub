@@ -17,6 +17,16 @@
     "myShop": "My Shop",
     "manageNews": "Manage News"
   },
+  "footer": {
+    "desc": "Premium marketplace for PCs, laptops and components. Powered by AI.",
+    "navigation": "Navigation",
+    "company": "Company",
+    "help": "Need Help?",
+    "supportDesc": "Our team is ready to help you with any questions about products or orders.",
+    "support": "Contact Support",
+    "rights": "All rights reserved.",
+    "status": "All systems operational"
+  },
   "common": {
     "loading": "Loading...",
     "error": "Something went wrong",
@@ -444,6 +454,27 @@
   "payments": {
     "title": "My Payments",
     "noPayments": "No payments yet"
+  },
+  "support": {
+    "title": "Support Center",
+    "subtitle": "We'll answer within 24 hours and send the reply to your email",
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "email": "Email",
+    "subject": "Subject",
+    "subjectPlaceholder": "Brief topic of your request",
+    "message": "Message",
+    "messagePlaceholder": "Describe your problem or question in detail...",
+    "note": "We reply within 24 hours to your email.",
+    "send": "Send Request",
+    "sending": "Sending...",
+    "errorFill": "Please fill in all required fields",
+    "successTitle": "Request received!",
+    "successDesc": "Thank you for reaching out. We have received your request and will reply to your email shortly.",
+    "sendAnother": "Send another request",
+    "infoEmail": "Email",
+    "infoResponse": "Response time",
+    "infoResponseVal": "Within 24 hours"
   },
   "admin": {
     "allProducts": "All Products",
