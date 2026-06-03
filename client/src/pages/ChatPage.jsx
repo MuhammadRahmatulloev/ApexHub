@@ -77,10 +77,9 @@ export default function ChatPage() {
     setMessages(prev => [...prev, tempUserMsg])
 
     try {
-      const res = await api.post('/chat/send/', {
-        message: text,
-        conversation_id: activeConvId || null,
-      })
+      const payload = { message: text }
+      if (activeConvId) payload.conversation_id = activeConvId
+      const res = await api.post('/chat/send/', payload)
 
       const convId = res.data.conversation_id
 

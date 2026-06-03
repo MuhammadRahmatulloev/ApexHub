@@ -37,13 +37,27 @@ const ProfilePage = () => {
     navigate('/login')
   }
 
-  const becomeSeller = async () => {
+const becomeSeller = async () => {
+  setBecoming(true)
+  setBecomeMsg('')
+  setBecomeErr('')
+  try {
+    const res = await api.post('/auth/become-seller/')
+    setBecomeMsg(t('profile.roleChanged'))
+    setTimeout(() => window.location.reload(), 1500)
+  } catch (err) {
+    setBecomeErr(err.response?.data?.error || t('common.error'))
+  }
+  setBecoming(false)
+}
+
+  const becomeClient = async () => {
     setBecoming(true)
     setBecomeMsg('')
     setBecomeErr('')
     try {
-      const res = await api.post('/auth/become-seller/')
-      setBecomeMsg(res.data.message)
+      await api.patch('/auth/profile/', { role: 'CLIENT' })
+      setBecomeMsg(t('profile.roleChanged'))
       setTimeout(() => window.location.reload(), 1500)
     } catch (err) {
       setBecomeErr(err.response?.data?.error || t('common.error'))
@@ -269,7 +283,35 @@ const ProfilePage = () => {
           opacity: 0;
           transition: opacity 0.2s;
           cursor: pointer;
-        }
+        },
+        sellerInfoBox: {
+          background: 'var(--bg-hover)',
+          border: '1px solid var(--border)',
+          borderRadius: '10px',
+          padding: '16px',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          marginBottom: '16px',
+        },
+        sellerInfoRow: {
+          display: 'flex',
+          alignItems: 'center',
+          gap: '10px',
+        },
+        sellerInfoText: {
+          color: 'var(--text-secondary)',
+          fontSize: '13px',
+        },
+        sellerWarning: {
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: '8px',
+          background: 'rgba(251,191,36,0.06)',
+          border: '1px solid rgba(251,191,36,0.2)',
+          borderRadius: '8px',
+          padding: '10px 14px',
+        },
         .avatar-wrap:hover .avatar-overlay { opacity: 1; }
       `}</style>
 
@@ -319,8 +361,7 @@ const ProfilePage = () => {
                 <span style={s.statLabel}>{t('profile.memberSince')}</span>
               </div>
             </div>
-
-            <div style={s.sideActions}>
+            {/* <div style={s.sideActions}>
               {user.role === 'CLIENT' && (
                 <div>
                   {becomeMsg && <div style={s.successBox}>{becomeMsg}</div>}
@@ -331,6 +372,9 @@ const ProfilePage = () => {
                 </div>
               )}
               <button className="danger-btn" onClick={handleLogout}>{t('nav.logout')}</button>
+            </div> */}
+            <div style={s.sideActions}>
+              <button className="danger-btn" onClick={handleLogout}>{t('nav.logout')}</button>
             </div>
           </div>
         </div>
@@ -340,6 +384,9 @@ const ProfilePage = () => {
             <div style={s.tabsBar}>
               <button className={tab === 'info' ? 'profile-tab-active' : 'profile-tab'} onClick={() => setTab('info')}>
                 {t('profile.personalInfo')}
+              </button>
+              <button className={tab === 'seller' ? 'profile-tab-active' : 'profile-tab'} onClick={() => setTab('seller')}>
+                {t('profile.sellerTab')}
               </button>
               <button className={tab === 'security' ? 'profile-tab-active' : 'profile-tab'} onClick={() => setTab('security')}>
                 {t('profile.security')}
@@ -418,6 +465,68 @@ const ProfilePage = () => {
                         {editLoading ? t('profile.saving') : t('profile.save')}
                       </button>
                     </div>
+                  )}
+                </div>
+              )}
+            
+              {tab === 'seller' && (
+                <div style={{ animation: 'fadeUp 0.3s ease both' }}>
+                  {user.role === 'CLIENT' ? (
+                    <div>
+                      <div style={s.sectionHeader}>
+                        <div>
+                          <p style={s.sectionTitle}>{t('profile.becomeSellerTitle')}</p>
+                          <p style={s.sectionSub}>{t('profile.becomeSellerDesc')}</p>
+                        </div>
+                      </div>
+                      {becomeMsg && <div style={{ ...s.successBox, marginBottom: '20px' }}>{becomeMsg}</div>}
+                      {becomeErr && <div style={{ ...s.errorBox, marginBottom: '20px' }}>{becomeErr}</div>}
+                      <div style={s.sellerInfoBox}>
+                        <div style={s.sellerInfoRow}>
+                          <svg width="16" height="16" fill="none" stroke="var(--success)" strokeWidth="1.5" strokeLinecap="round"><path d="M2 8l4 4 8-8"/></svg>
+                          <span style={s.sellerInfoText}>List and sell your products</span>
+                        </div>
+                        <div style={s.sellerInfoRow}>
+                          <svg width="16" height="16" fill="none" stroke="var(--success)" strokeWidth="1.5" strokeLinecap="round"><path d="M2 8l4 4 8-8"/></svg>
+                          <span style={s.sellerInfoText}>View your sales dashboard</span>
+                        </div>
+                        <div style={s.sellerInfoRow}>
+                          <svg width="16" height="16" fill="none" stroke="var(--success)" strokeWidth="1.5" strokeLinecap="round"><path d="M2 8l4 4 8-8"/></svg>
+                          <span style={s.sellerInfoText}>Track orders and revenue</span>
+                        </div>
+                      </div>
+                      <div style={s.sellerWarning}>
+                        <svg width="14" height="14" fill="none" stroke="var(--warning)" strokeWidth="1.5" strokeLinecap="round"><circle cx="7" cy="7" r="6"/><path d="M7 4v3M7 10h.01"/></svg>
+                        <span style={{ color: 'var(--warning)', fontSize: '12px' }}>{t('profile.confirmBecomeSeller')}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                        <button className="save-btn" onClick={becomeSeller} disabled={becoming}>
+                          {becoming ? t('profile.processing') : t('profile.becomeSellerBtn')}
+                        </button>
+                      </div>
+                    </div>
+                  ) : user.role === 'SELLER' ? (
+                    <div>
+                      <div style={s.sectionHeader}>
+                        <div>
+                          <p style={s.sectionTitle}>{t('profile.becomeClientTitle')}</p>
+                          <p style={s.sectionSub}>{t('profile.becomeClientDesc')}</p>
+                        </div>
+                      </div>
+                      {becomeMsg && <div style={{ ...s.successBox, marginBottom: '20px' }}>{becomeMsg}</div>}
+                      {becomeErr && <div style={{ ...s.errorBox, marginBottom: '20px' }}>{becomeErr}</div>}
+                      <div style={s.sellerWarning}>
+                        <svg width="14" height="14" fill="none" stroke="var(--warning)" strokeWidth="1.5" strokeLinecap="round"><circle cx="7" cy="7" r="6"/><path d="M7 4v3M7 10h.01"/></svg>
+                        <span style={{ color: 'var(--warning)', fontSize: '12px' }}>{t('profile.confirmBecomeClient')}</span>
+                      </div>
+                      <div style={{ display: 'flex', gap: '10px', marginTop: '20px' }}>
+                        <button className="save-btn" onClick={becomeClient} disabled={becoming}>
+                          {becoming ? t('profile.processing') : t('profile.becomeClientBtn')}
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Admin cannot change role.</p>
                   )}
                 </div>
               )}

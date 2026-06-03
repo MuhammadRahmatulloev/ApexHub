@@ -5,6 +5,7 @@ import 'leaflet/dist/leaflet.css'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 
 delete L.Icon.Default.prototype._getIconUrl
 L.Icon.Default.mergeOptions({
@@ -56,6 +57,7 @@ const EMPTY_FORM = { name: '', address: '', lat: '', lng: '', work_hours: '', ph
 
 const LocationsPage = () => {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const isSeller = user && (user.role === 'SELLER' || user.role === 'ADMIN')
 
   const [locations, setLocations] = useState([])
@@ -104,7 +106,6 @@ const LocationsPage = () => {
     setGeoSearch(value)
     setGeoResults([])
     if (!value.trim()) return
-    
     clearTimeout(geoTimer.current)
     geoTimer.current = setTimeout(async () => {
       setGeoLoading(true)
@@ -115,7 +116,7 @@ const LocationsPage = () => {
         const data = await res.json()
         setGeoResults(data)
       } catch (err) {
-        console.error("Geo search error:", err)
+        console.error('Geo search error:', err)
       }
       setGeoLoading(false)
     }, 500)
@@ -160,7 +161,7 @@ const LocationsPage = () => {
   const handleSave = async (e) => {
     e.preventDefault()
     if (!form.lat || !form.lng) {
-      setFormError('Pick a location on the map or enter coordinates')
+      setFormError(t('locations.form.coordError'))
       return
     }
     setSaving(true)
@@ -170,25 +171,25 @@ const LocationsPage = () => {
         const res = await api.patch(`/locations/${editingId}/update_location/`, form)
         setMyLocations(prev => prev.map(l => l.id === editingId ? res.data : l))
         setLocations(prev => prev.map(l => l.id === editingId ? res.data : l))
-        setFormSuccess('Location updated!')
+        setFormSuccess(t('locations.form.editSuccess'))
       } else {
         const res = await api.post('/locations/create_location/', form)
         setMyLocations(prev => [...prev, res.data])
         setLocations(prev => [...prev, res.data])
-        setFormSuccess('Location added!')
+        setFormSuccess(t('locations.form.addSuccess'))
         setForm(EMPTY_FORM)
         setEditingId(null)
       }
       setTimeout(() => { setFormSuccess(''); setShowForm(false) }, 1200)
     } catch (err) {
       const d = err.response?.data
-      setFormError(d ? Object.values(d)[0]?.[0] || 'Error' : 'Error')
+      setFormError(d ? Object.values(d)[0]?.[0] || t('common.error') : t('common.error'))
     }
     setSaving(false)
   }
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this location?')) return
+    if (!window.confirm(t('locations.list.deleteConfirm'))) return
     setDeleting(id)
     try {
       await api.delete(`/locations/${id}/delete_location/`)
@@ -236,7 +237,7 @@ const LocationsPage = () => {
         }
         .loc-form-input {
           width: 100%;
-          background: rgba(255, 255, 255, 0.05); 
+          background: rgba(255, 255, 255, 0.05);
           border: 1px solid var(--border);
           border-radius: 8px;
           padding: 10px 14px;
@@ -247,8 +248,8 @@ const LocationsPage = () => {
           transition: all 0.2s;
           box-sizing: border-box;
         }
-        .loc-form-input:focus { 
-          border-color: var(--accent); 
+        .loc-form-input:focus {
+          border-color: var(--accent);
           background: rgba(255, 255, 255, 0.08);
           box-shadow: 0 0 0 3px var(--accent-dim);
         }
@@ -386,9 +387,7 @@ const LocationsPage = () => {
           font-family: inherit;
         }
         .search-input-loc::placeholder { color: var(--text-secondary); }
-
         .geo-item:hover { background: var(--bg-hover); }
-
         @keyframes spin {
           to { transform: rotate(360deg); }
         }
@@ -397,25 +396,25 @@ const LocationsPage = () => {
       <div style={s.page}>
         <div style={s.topBar}>
           <div>
-            <h1 style={s.title}>Seller Locations</h1>
-            <p style={s.sub}>Find sellers and their stores on the map</p>
+            <h1 style={s.title}>{t('locations.title')}</h1>
+            <p style={s.sub}>{t('locations.subtitle')}</p>
           </div>
           <div style={s.topRight}>
             <div style={s.tabs}>
               <button className={tab === 'map' ? 'loc-tab-active' : 'loc-tab'} onClick={() => setTab('map')}>
-                Map
+                {t('locations.tabs.map')}
               </button>
               <button className={tab === 'list' ? 'loc-tab-active' : 'loc-tab'} onClick={() => setTab('list')}>
-                List {locations.length > 0 && `(${locations.length})`}
+                {t('locations.tabs.list')} {locations.length > 0 && `(${locations.length})`}
               </button>
               {isSeller && (
                 <button className={tab === 'manage' ? 'loc-tab-active' : 'loc-tab'} onClick={() => setTab('manage')}>
-                  My Locations {myLocations.length > 0 && `(${myLocations.length})`}
+                  {t('locations.tabs.manage')} {myLocations.length > 0 && `(${myLocations.length})`}
                 </button>
               )}
             </div>
             {isSeller && (
-              <button className="add-loc-btn" onClick={openCreate}>+ Add Location</button>
+              <button className="add-loc-btn" onClick={openCreate}>{t('locations.addLocation')}</button>
             )}
           </div>
         </div>
@@ -428,7 +427,7 @@ const LocationsPage = () => {
             </svg>
             <input
               className="search-input-loc"
-              placeholder="Search by name, address, seller..."
+              placeholder={t('locations.search.placeholder')}
               value={search}
               onChange={e => setSearch(e.target.value)}
             />
@@ -437,7 +436,7 @@ const LocationsPage = () => {
             )}
           </div>
           {search && (
-            <span style={s.searchCount}>{filtered.length} found</span>
+            <span style={s.searchCount}>{filtered.length} {t('locations.search.found')}</span>
           )}
         </div>
 
@@ -451,7 +450,7 @@ const LocationsPage = () => {
                 </svg>
                 <input
                   style={s.geoInput}
-                  placeholder="Search city, street, country..."
+                  placeholder={t('locations.search.cityPlaceholder')}
                   value={geoSearch}
                   onChange={e => handleGeoSearch(e.target.value)}
                 />
@@ -481,11 +480,11 @@ const LocationsPage = () => {
                   <path d="M7 1C4.8 1 3 2.8 3 5c0 3.3 4 8 4 8s4-4.7 4-8c0-2.2-1.8-4-4-4z"/>
                   <circle cx="7" cy="5" r="1.5"/>
                 </svg>
-                Click on the map to pick coordinates
-                <button style={s.cancelPickBtn} onClick={() => setPickMode(false)}>Cancel</button>
+                {t('locations.form.pickHint')}
+                <button style={s.cancelPickBtn} onClick={() => setPickMode(false)}>{t('locations.form.cancelPick')}</button>
               </div>
             )}
-            
+
             {!loading && (
               <MapContainer
                 center={[38.559772, 68.773994]}
@@ -512,13 +511,12 @@ const LocationsPage = () => {
                         <span style={s.popupAddr}>{loc.address}</span>
                         {loc.work_hours && <span style={s.popupInfo}>🕐 {loc.work_hours}</span>}
                         {loc.phone && <span style={s.popupInfo}>📞 {loc.phone}</span>}
-                        <a
-                          href={`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`}
+                        
+                          <a href={`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`}
                           target="_blank"
                           rel="noreferrer"
-                          style={s.popupMapLink}
-                        >
-                          Open in Google Maps
+                          style={s.popupMapLink}>
+                          {t('locations.popup.openInMaps')}
                         </a>
                       </div>
                     </Popup>
@@ -526,7 +524,7 @@ const LocationsPage = () => {
                 ))}
               </MapContainer>
             )}
-            {loading && <div style={s.mapLoader}>Loading map...</div>}
+            {loading && <div style={s.mapLoader}>{t('common.loading')}</div>}
           </div>
         )}
 
@@ -538,7 +536,7 @@ const LocationsPage = () => {
               ))
             ) : filtered.length === 0 ? (
               <div style={s.empty}>
-                <p style={s.emptyTitle}>No locations found</p>
+                <p style={s.emptyTitle}>{t('locations.list.noLocations')}</p>
               </div>
             ) : (
               filtered.map((loc, i) => (
@@ -550,7 +548,7 @@ const LocationsPage = () => {
                       <p style={s.locSeller}>{loc.seller_name} · {loc.seller_email}</p>
                     </div>
                     <button className="fly-btn" onClick={() => handleFlyTo(loc)}>
-                      📍 Show on map
+                      {t('locations.list.showOnMap')}
                     </button>
                   </div>
                   <div style={s.locDivider} />
@@ -571,57 +569,71 @@ const LocationsPage = () => {
           <div style={s.manageWrap}>
             {showForm && (
               <div style={s.formCard}>
-                 <p style={s.formTitle}>{editingId ? 'Edit Location' : 'Add New Location'}</p>
-                 {/* Форма как в твоем коде */}
-                 <form onSubmit={handleSave} style={s.form}>
-                    <div style={s.formGrid}>
-                        <div style={s.field}>
-                            <label style={s.fieldLabel}>Store Name *</label>
-                            <input className="loc-form-input" placeholder="e.g. Main Store" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
-                        </div>
-                        <div style={s.field}>
-                            <label style={s.fieldLabel}>Address *</label>
-                            <input className="loc-form-input" placeholder="e.g. Dushanbe, Rudaki 42" value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} required />
-                        </div>
+                <p style={s.formTitle}>{editingId ? t('locations.form.editTitle') : t('locations.form.addTitle')}</p>
+                {formError && <div style={s.formErrorBox}>{formError}</div>}
+                {formSuccess && <div style={s.formSuccessBox}>{formSuccess}</div>}
+                <form onSubmit={handleSave} style={s.form}>
+                  <div style={s.formGrid}>
+                    <div style={s.field}>
+                      <label style={s.fieldLabel}>{t('locations.form.storeName')} *</label>
+                      <input className="loc-form-input" placeholder={t('locations.form.storeNamePlaceholder')} value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
                     </div>
-                    <div style={s.coordRow}>
-                        <div style={s.field}>
-                            <label style={s.fieldLabel}>Lat *</label>
-                            <input type="number" step="any" className="loc-form-input" value={form.lat} onChange={e => setForm(p => ({ ...p, lat: e.target.value }))} required />
-                        </div>
-                        <div style={s.field}>
-                            <label style={s.fieldLabel}>Lng *</label>
-                            <input type="number" step="any" className="loc-form-input" value={form.lng} onChange={e => setForm(p => ({ ...p, lng: e.target.value }))} required />
-                        </div>
-                        <button type="button" className={pickMode ? 'pick-btn-active' : 'pick-btn'} onClick={() => { setPickMode(!pickMode); setTab('map') }}>
-                            Pick
-                        </button>
+                    <div style={s.field}>
+                      <label style={s.fieldLabel}>{t('locations.form.address')} *</label>
+                      <input className="loc-form-input" placeholder={t('locations.form.addressPlaceholder')} value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} required />
                     </div>
-                    <div style={s.formActions}>
-                        <button type="button" className="cancel-loc-btn" onClick={() => setShowForm(false)}>Cancel</button>
-                        <button type="submit" className="save-loc-btn" disabled={saving}>Save</button>
+                  </div>
+                  <div style={s.formGrid}>
+                    <div style={s.field}>
+                      <label style={s.fieldLabel}>{t('locations.form.workHours')}</label>
+                      <input className="loc-form-input" placeholder={t('locations.form.workHoursPlaceholder')} value={form.work_hours} onChange={e => setForm(p => ({ ...p, work_hours: e.target.value }))} />
                     </div>
-                 </form>
+                    <div style={s.field}>
+                      <label style={s.fieldLabel}>{t('locations.form.phone')}</label>
+                      <input className="loc-form-input" placeholder={t('locations.form.phonePlaceholder')} value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
+                    </div>
+                  </div>
+                  <div style={s.coordRow}>
+                    <div style={s.field}>
+                      <label style={s.fieldLabel}>{t('locations.form.lat')} *</label>
+                      <input type="number" step="any" className="loc-form-input" value={form.lat} onChange={e => setForm(p => ({ ...p, lat: e.target.value }))} required />
+                    </div>
+                    <div style={s.field}>
+                      <label style={s.fieldLabel}>{t('locations.form.lng')} *</label>
+                      <input type="number" step="any" className="loc-form-input" value={form.lng} onChange={e => setForm(p => ({ ...p, lng: e.target.value }))} required />
+                    </div>
+                    <button type="button" className={pickMode ? 'pick-btn-active' : 'pick-btn'} onClick={() => { setPickMode(!pickMode); setTab('map') }}>
+                      {t('locations.form.pick')}
+                    </button>
+                  </div>
+                  <div style={s.formActions}>
+                    <button type="button" className="cancel-loc-btn" onClick={() => setShowForm(false)}>{t('locations.form.cancel')}</button>
+                    <button type="submit" className="save-loc-btn" disabled={saving}>
+                      {saving ? t('common.saving') : t('locations.form.save')}
+                    </button>
+                  </div>
+                </form>
               </div>
             )}
-            {/* Список моих локаций */}
             <div style={s.myLocList}>
-                 <div style={s.myLocHeader}>
-                    <p style={s.myLocTitle}>My Locations ({myLocations.length})</p>
-                    <button className="add-loc-btn" onClick={openCreate}>+ Add</button>
-                 </div>
-                 <div style={s.myLocGrid}>
-                    {myLocations.map(loc => (
-                        <div key={loc.id} style={s.myLocCard}>
-                            <p style={s.locName}>{loc.name}</p>
-                            <div style={s.myLocActions}>
-                                <button className="fly-btn" onClick={() => handleFlyTo(loc)}>Map</button>
-                                <button className="edit-loc-btn" onClick={() => openEdit(loc)}>Edit</button>
-                                <button className="del-loc-btn" onClick={() => handleDelete(loc.id)}>Del</button>
-                            </div>
-                        </div>
-                    ))}
-                 </div>
+              <div style={s.myLocHeader}>
+                <p style={s.myLocTitle}>{t('locations.list.myLocations')} ({myLocations.length})</p>
+                <button className="add-loc-btn" onClick={openCreate}>{t('locations.list.add')}</button>
+              </div>
+              <div style={s.myLocGrid}>
+                {myLocations.map(loc => (
+                  <div key={loc.id} style={s.myLocCard}>
+                    <p style={s.locName}>{loc.name}</p>
+                    <div style={s.myLocActions}>
+                      <button className="fly-btn" onClick={() => handleFlyTo(loc)}>{t('locations.list.map')}</button>
+                      <button className="edit-loc-btn" onClick={() => openEdit(loc)}>{t('locations.list.edit')}</button>
+                      <button className="del-loc-btn" disabled={deleting === loc.id} onClick={() => handleDelete(loc.id)}>
+                        {deleting === loc.id ? '...' : t('locations.list.delete')}
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         )}
@@ -645,7 +657,6 @@ const s = {
   mapLoader: { height: '560px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-card)', color: 'var(--text-secondary)' },
   pickBanner: { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: 'var(--accent)', color: '#fff', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' },
   cancelPickBtn: { background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: '700' },
-  
   geoSearchWrap: { position: 'absolute', top: '12px', right: '12px', zIndex: 1000, width: '320px' },
   geoSearchBox: { display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '9px 12px', boxShadow: 'var(--shadow)' },
   geoInput: { flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'inherit' },
@@ -654,14 +665,12 @@ const s = {
   geoDropdown: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', marginTop: '6px', overflow: 'hidden', boxShadow: 'var(--shadow-card)', maxHeight: '300px', overflowY: 'auto' },
   geoItem: { display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border)', transition: 'background 0.15s' },
   geoItemText: { color: 'var(--text-primary)', fontSize: '12px', lineHeight: '1.4' },
-
   popup: { display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '150px', padding: '4px' },
   popupName: { fontSize: '14px', color: 'var(--text-primary)', display: 'block' },
   popupSeller: { fontSize: '11px', color: 'var(--accent)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' },
   popupAddr: { fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' },
   popupInfo: { fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' },
   popupMapLink: { marginTop: '8px', fontSize: '11px', color: 'var(--accent)', textDecoration: 'none', fontWeight: '600', borderTop: '1px solid var(--border)', paddingTop: '8px' },
-  
   listGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
   locTop: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' },
   locAvatar: { width: '36px', height: '36px', borderRadius: '10px', background: 'var(--accent-dim)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700', flexShrink: 0 },
@@ -670,21 +679,25 @@ const s = {
   locDivider: { height: '1px', background: 'var(--border)', margin: '14px 0' },
   locInfoRow: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' },
   locInfoText: { fontSize: '12px', color: 'var(--text-secondary)' },
-  
   manageWrap: { animation: 'fadeUp 0.3s ease both' },
   formCard: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', marginBottom: '32px' },
-  formTitle: { fontSize: '18px', fontWeight: '800', marginBottom: '20px' },
-  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' },
+  formTitle: { fontSize: '18px', fontWeight: '800', marginBottom: '20px', color: 'var(--text-primary)' },
+  formErrorBox: { background: 'rgba(248,113,113,0.08)', border: '1px solid rgba(248,113,113,0.25)', color: 'var(--danger)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px' },
+  formSuccessBox: { background: 'rgba(52,211,153,0.08)', border: '1px solid rgba(52,211,153,0.25)', color: 'var(--success)', borderRadius: '8px', padding: '10px 14px', marginBottom: '16px', fontSize: '13px' },
+  form: { display: 'flex', flexDirection: 'column', gap: '16px' },
+  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' },
   field: { display: 'flex', flexDirection: 'column', gap: '6px' },
   fieldLabel: { fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' },
-  coordRow: { display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', alignItems: 'flex-end', marginBottom: '16px' },
-  formActions: { display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' },
+  coordRow: { display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', alignItems: 'flex-end' },
+  formActions: { display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '8px' },
   myLocList: { marginTop: '20px' },
   myLocHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' },
-  myLocTitle: { fontSize: '16px', fontWeight: '700' },
+  myLocTitle: { fontSize: '16px', fontWeight: '700', color: 'var(--text-primary)' },
   myLocGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '16px' },
   myLocCard: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   myLocActions: { display: 'flex', gap: '8px' },
+  empty: { display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px 24px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px' },
+  emptyTitle: { color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' },
 }
 
 export default LocationsPage

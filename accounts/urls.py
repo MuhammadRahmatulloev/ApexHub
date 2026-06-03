@@ -10,6 +10,7 @@ from .views import (
     ForgotPasswordView,
     ResetPasswordView,
     ChangePasswordView,
+    BecomeClientView,
 )
 
 urlpatterns = [
@@ -23,4 +24,5 @@ urlpatterns = [
     path('become-seller/', BecomeSellerView.as_view(), name='become-seller'),
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),
     path('reset-password/', ResetPasswordView.as_view(), name='reset-password'),
+    path('become-client/', BecomeClientView.as_view(), name='become-client'),
 ]

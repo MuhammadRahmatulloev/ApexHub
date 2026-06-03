@@ -225,6 +225,24 @@ class BecomeSellerView(APIView):
             'message': 'Congratulations! You are now a seller',
             'user': UserProfileSerializer(user).data
         })
+    
+
+@extend_schema(tags=['auth'])
+class BecomeClientView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = request.user
+        if user.role == 'CLIENT':
+            return Response({'error': 'You are already a client'}, status=status.HTTP_400_BAD_REQUEST)
+        if user.role == 'ADMIN':
+            return Response({'error': 'Admin cannot change role'}, status=status.HTTP_400_BAD_REQUEST)
+        user.role = 'CLIENT'
+        user.save()
+        return Response({
+            'message': 'You are now a client',
+            'user': UserProfileSerializer(user).data
+        })
 
 
 @extend_schema(tags=['auth'])
