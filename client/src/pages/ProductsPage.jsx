@@ -1,25 +1,11 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
-const TYPES = [
-  { value: '', label: 'All' },
-  { value: 'LAPTOP', label: 'Laptops' },
-  { value: 'PC', label: 'PCs' },
-  { value: 'COMPONENT', label: 'Components' },
-  { value: 'PERIPHERAL', label: 'Peripherals' },
-]
-
-const SORT_OPTIONS = [
-  { value: '', label: 'Default' },
-  { value: 'price', label: 'Price ↑' },
-  { value: '-price', label: 'Price ↓' },
-  { value: '-average_rating', label: 'Top Rated' },
-  { value: '-created_at', label: 'Newest' },
-]
-
 const ProductCard = ({ product }) => {
+  const { t } = useTranslation()
   const [hovered, setHovered] = useState(false)
 
   return (
@@ -46,7 +32,7 @@ const ProductCard = ({ product }) => {
         }
         {!product.is_available && (
           <div style={s.outOfStockOverlay}>
-            <span style={s.outOfStockText}>Out of Stock</span>
+            <span style={s.outOfStockText}>{t('products.outOfStock')}</span>
           </div>
         )}
         {product.average_rating >= 4.5 && (
@@ -73,7 +59,7 @@ const ProductCard = ({ product }) => {
           </div>
         </div>
         {product.stock > 0 && product.stock <= 5 && (
-          <p style={s.lowStock}>Only {product.stock} left</p>
+          <p style={s.lowStock}>{t('products.lowStock', { count: product.stock })}</p>
         )}
       </div>
     </Link>
@@ -81,6 +67,7 @@ const ProductCard = ({ product }) => {
 }
 
 const ProductsPage = () => {
+  const { t } = useTranslation()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
@@ -93,6 +80,22 @@ const ProductsPage = () => {
   const [categories, setCategories] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('')
   const inputRef = useRef(null)
+
+  const TYPES = [
+    { value: '', label: t('products.all') },
+    { value: 'LAPTOP', label: t('products.laptops') },
+    { value: 'PC', label: t('products.pcs') },
+    { value: 'COMPONENT', label: t('products.components') },
+    { value: 'PERIPHERAL', label: t('products.peripherals') },
+  ]
+
+  const SORT_OPTIONS = [
+    { value: '', label: t('products.sort.default') },
+    { value: 'price', label: t('products.sort.priceAsc') },
+    { value: '-price', label: t('products.sort.priceDesc') },
+    { value: '-average_rating', label: t('products.sort.topRated') },
+    { value: '-created_at', label: t('products.sort.newest') },
+  ]
 
   useEffect(() => {
     api.get('/products/categories/')
@@ -177,10 +180,7 @@ const ProductsPage = () => {
           white-space: nowrap;
           font-family: inherit;
         }
-        .filter-btn:hover {
-          border-color: var(--accent);
-          color: var(--accent);
-        }
+        .filter-btn:hover { border-color: var(--accent); color: var(--accent); }
         .filter-btn-active {
           background: var(--accent);
           color: #fff;
@@ -204,14 +204,8 @@ const ProductsPage = () => {
           transition: all 0.15s;
           font-family: inherit;
         }
-        .page-btn:hover:not(:disabled) {
-          border-color: var(--accent);
-          color: var(--accent);
-        }
-        .page-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
+        .page-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+        .page-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .page-num {
           width: 34px; height: 34px;
           display: flex; align-items: center; justify-content: center;
@@ -301,9 +295,9 @@ const ProductsPage = () => {
 
       <div style={s.pageHeader}>
         <div>
-          <h1 style={s.title}>Products</h1>
+          <h1 style={s.title}>{t('products.title')}</h1>
           {!loading && (
-            <p style={s.subtitle}>{totalCount} items found</p>
+            <p style={s.subtitle}>{totalCount} {t('products.itemsFound')}</p>
           )}
         </div>
 
@@ -316,27 +310,27 @@ const ProductsPage = () => {
             <input
               ref={inputRef}
               className="search-input"
-              placeholder="Search products..."
+              placeholder={t('products.search')}
               value={searchInput}
               onChange={e => setSearchInput(e.target.value)}
             />
             {searchInput && (
               <button type="button" className="clear-btn" onClick={handleClearSearch}>×</button>
             )}
-            <button type="submit" className="search-btn">Search</button>
+            <button type="submit" className="search-btn">{t('common.search')}</button>
           </div>
         </form>
       </div>
 
       <div style={s.toolbarRow}>
         <div style={s.filtersRow}>
-          {TYPES.map(t => (
+          {TYPES.map(tp => (
             <button
-              key={t.value}
-              className={type === t.value ? 'filter-btn-active' : 'filter-btn'}
-              onClick={() => handleTypeChange(t.value)}
+              key={tp.value}
+              className={type === tp.value ? 'filter-btn-active' : 'filter-btn'}
+              onClick={() => handleTypeChange(tp.value)}
             >
-              {t.label}
+              {tp.label}
             </button>
           ))}
         </div>
@@ -347,7 +341,7 @@ const ProductsPage = () => {
               value={selectedCategory}
               onChange={e => handleCategoryChange(e.target.value)}
             >
-              <option value="">All Categories</option>
+              <option value="">{t('products.allCategories')}</option>
               {categories.map(c => (
                 <option key={c.id} value={c.id}>{c.name}</option>
               ))}
@@ -378,8 +372,8 @@ const ProductsPage = () => {
             <path d="M16 40h16M24 36v4"/>
             <path d="M20 20l4 4 8-8" strokeWidth="1.5"/>
           </svg>
-          <p style={s.emptyTitle}>No products found</p>
-          <p style={s.emptyDesc}>Try changing your filters or search query</p>
+          <p style={s.emptyTitle}>{t('products.noProducts')}</p>
+          <p style={s.emptyDesc}>{t('products.noProductsDesc')}</p>
           <button
             style={s.resetBtn}
             onClick={() => {
@@ -391,7 +385,7 @@ const ProductsPage = () => {
               setPage(1)
             }}
           >
-            Reset filters
+            {t('products.resetFilters')}
           </button>
         </div>
       ) : (
@@ -411,7 +405,7 @@ const ProductsPage = () => {
             disabled={page === 1}
             onClick={() => setPage(p => p - 1)}
           >
-            ← Prev
+            {t('admin.prevPage')}
           </button>
 
           <div style={s.pageNums}>
@@ -443,7 +437,7 @@ const ProductsPage = () => {
             disabled={page === totalPages}
             onClick={() => setPage(p => p + 1)}
           >
-            Next →
+            {t('admin.nextPage')}
           </button>
         </div>
       )}
@@ -452,234 +446,40 @@ const ProductsPage = () => {
 }
 
 const s = {
-  pageHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '20px',
-    gap: '16px',
-    flexWrap: 'wrap',
-  },
-  title: {
-    color: 'var(--text-primary)',
-    fontSize: '26px',
-    fontWeight: '700',
-    marginBottom: '2px',
-  },
-  subtitle: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  searchWrap: {
-    flex: '0 1 360px',
-  },
-  searchBox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '10px',
-    padding: '7px 10px',
-    transition: 'border-color 0.15s',
-  },
-  toolbarRow: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '20px',
-    gap: '12px',
-    flexWrap: 'wrap',
-  },
-  filtersRow: {
-    display: 'flex',
-    gap: '6px',
-    flexWrap: 'wrap',
-  },
-  controlsRight: {
-    display: 'flex',
-    gap: '8px',
-    alignItems: 'center',
-  },
-  grid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
-    gap: '16px',
-    marginBottom: '32px',
-  },
-  skeleton: {
-    height: '280px',
-    borderRadius: '12px',
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    animation: 'skeletonPulse 1.4s ease infinite',
-  },
-  card: {
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '12px',
-    overflow: 'hidden',
-    transition: 'border-color 0.18s, transform 0.18s, box-shadow 0.18s',
-    display: 'block',
-    textDecoration: 'none',
-    height: '100%',
-  },
-  cardImg: {
-    height: '180px',
-    background: 'var(--bg-hover)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    overflow: 'hidden',
-    position: 'relative',
-  },
-  img: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  outOfStockOverlay: {
-    position: 'absolute',
-    inset: 0,
-    background: 'rgba(0,0,0,0.45)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  outOfStockText: {
-    color: '#fff',
-    fontSize: '12px',
-    fontWeight: '700',
-    letterSpacing: '0.5px',
-    background: 'rgba(0,0,0,0.5)',
-    padding: '4px 10px',
-    borderRadius: '20px',
-  },
-  topBadge: {
-    position: 'absolute',
-    top: '10px',
-    left: '10px',
-    background: 'var(--warning)',
-    color: '#000',
-    fontSize: '9px',
-    fontWeight: '800',
-    padding: '3px 8px',
-    borderRadius: '4px',
-    letterSpacing: '0.5px',
-    textTransform: 'uppercase',
-  },
-  cardBody: {
-    padding: '14px',
-  },
-  cardMeta: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    marginBottom: '7px',
-  },
-  cardBadge: {
-    background: 'var(--accent-dim)',
-    color: 'var(--accent)',
-    fontSize: '9px',
-    fontWeight: '700',
-    letterSpacing: '0.8px',
-    textTransform: 'uppercase',
-    padding: '2px 7px',
-    borderRadius: '4px',
-  },
-  cardBrand: {
-    color: 'var(--text-muted)',
-    fontSize: '11px',
-  },
-  cardName: {
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '600',
-    marginBottom: '10px',
-    lineHeight: '1.4',
-    display: '-webkit-box',
-    WebkitLineClamp: 2,
-    WebkitBoxOrient: 'vertical',
-    overflow: 'hidden',
-  },
-  cardBottom: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardPrice: {
-    color: 'var(--accent)',
-    fontSize: '16px',
-    fontWeight: '800',
-  },
-  cardRatingWrap: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '3px',
-  },
-  starIcon: {
-    color: 'var(--warning)',
-    fontSize: '12px',
-  },
-  ratingNum: {
-    color: 'var(--text-primary)',
-    fontSize: '12px',
-    fontWeight: '600',
-  },
-  reviewCount: {
-    color: 'var(--text-muted)',
-    fontSize: '11px',
-  },
-  lowStock: {
-    color: 'var(--danger)',
-    fontSize: '11px',
-    fontWeight: '600',
-    marginTop: '6px',
-  },
-  emptyState: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: '80px 24px',
-    gap: '12px',
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '16px',
-  },
-  emptyTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '16px',
-    fontWeight: '600',
-  },
-  emptyDesc: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  resetBtn: {
-    marginTop: '8px',
-    background: 'var(--accent-dim)',
-    color: 'var(--accent)',
-    border: '1px solid var(--border)',
-    borderRadius: '8px',
-    padding: '8px 20px',
-    fontSize: '13px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    transition: 'background 0.15s',
-  },
-  pagination: {
-    display: 'flex',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: '8px',
-    marginBottom: '16px',
-  },
-  pageNums: {
-    display: 'flex',
-    gap: '4px',
-  },
+  pageHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', gap: '16px', flexWrap: 'wrap' },
+  title: { color: 'var(--text-primary)', fontSize: '26px', fontWeight: '700', marginBottom: '2px' },
+  subtitle: { color: 'var(--text-secondary)', fontSize: '13px' },
+  searchWrap: { flex: '0 1 360px' },
+  searchBox: { display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '7px 10px', transition: 'border-color 0.15s' },
+  toolbarRow: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px', gap: '12px', flexWrap: 'wrap' },
+  filtersRow: { display: 'flex', gap: '6px', flexWrap: 'wrap' },
+  controlsRight: { display: 'flex', gap: '8px', alignItems: 'center' },
+  grid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '16px', marginBottom: '32px' },
+  skeleton: { height: '280px', borderRadius: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)', animation: 'skeletonPulse 1.4s ease infinite' },
+  card: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', overflow: 'hidden', transition: 'border-color 0.18s, transform 0.18s, box-shadow 0.18s', display: 'block', textDecoration: 'none', height: '100%' },
+  cardImg: { height: '180px', background: 'var(--bg-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden', position: 'relative' },
+  img: { width: '100%', height: '100%', objectFit: 'cover' },
+  outOfStockOverlay: { position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  outOfStockText: { color: '#fff', fontSize: '12px', fontWeight: '700', letterSpacing: '0.5px', background: 'rgba(0,0,0,0.5)', padding: '4px 10px', borderRadius: '20px' },
+  topBadge: { position: 'absolute', top: '10px', left: '10px', background: 'var(--warning)', color: '#000', fontSize: '9px', fontWeight: '800', padding: '3px 8px', borderRadius: '4px', letterSpacing: '0.5px', textTransform: 'uppercase' },
+  cardBody: { padding: '14px' },
+  cardMeta: { display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '7px' },
+  cardBadge: { background: 'var(--accent-dim)', color: 'var(--accent)', fontSize: '9px', fontWeight: '700', letterSpacing: '0.8px', textTransform: 'uppercase', padding: '2px 7px', borderRadius: '4px' },
+  cardBrand: { color: 'var(--text-muted)', fontSize: '11px' },
+  cardName: { color: 'var(--text-primary)', fontSize: '13px', fontWeight: '600', marginBottom: '10px', lineHeight: '1.4', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' },
+  cardBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  cardPrice: { color: 'var(--accent)', fontSize: '16px', fontWeight: '800' },
+  cardRatingWrap: { display: 'flex', alignItems: 'center', gap: '3px' },
+  starIcon: { color: 'var(--warning)', fontSize: '12px' },
+  ratingNum: { color: 'var(--text-primary)', fontSize: '12px', fontWeight: '600' },
+  reviewCount: { color: 'var(--text-muted)', fontSize: '11px' },
+  lowStock: { color: 'var(--danger)', fontSize: '11px', fontWeight: '600', marginTop: '6px' },
+  emptyState: { display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 24px', gap: '12px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px' },
+  emptyTitle: { color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' },
+  emptyDesc: { color: 'var(--text-secondary)', fontSize: '13px' },
+  resetBtn: { marginTop: '8px', background: 'var(--accent-dim)', color: 'var(--accent)', border: '1px solid var(--border)', borderRadius: '8px', padding: '8px 20px', fontSize: '13px', fontWeight: '600', cursor: 'pointer', fontFamily: 'inherit', transition: 'background 0.15s' },
+  pagination: { display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '8px', marginBottom: '16px' },
+  pageNums: { display: 'flex', gap: '4px' },
 }
 
 export default ProductsPage

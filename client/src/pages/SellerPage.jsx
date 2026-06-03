@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const SellerPage = () => {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -19,18 +21,18 @@ const SellerPage = () => {
   useEffect(() => {
     api.get('/products/?seller=me')
       .then(res => setProducts(res.data.results || res.data))
-      .catch(() => setError('Failed to load products'))
+      .catch(() => setError(t('seller.loadError')))
       .finally(() => setLoading(false))
   }, [])
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this product?')) return
+    if (!window.confirm(t('seller.deleteConfirm'))) return
     setDeleting(id)
     try {
       await api.delete(`/products/${id}/`)
       setProducts(prev => prev.filter(p => p.id !== id))
     } catch {
-      setError('Failed to delete product')
+      setError(t('seller.deleteError'))
     }
     setDeleting(null)
   }
@@ -126,26 +128,26 @@ const SellerPage = () => {
       <div style={s.page}>
         <div style={s.topBar}>
           <div>
-            <h1 style={s.title}>Seller Dashboard</h1>
+            <h1 style={s.title}>{t('seller.dashboard')}</h1>
             <p style={s.sub}>{user.email}</p>
           </div>
           <button className="add-prod-btn" onClick={() => navigate('/seller/create')}>
-            + Add Product
+            {t('seller.addProduct')}
           </button>
         </div>
 
         <div style={s.statsRow}>
           <div style={s.statCard}>
             <span style={s.statNum}>{products.length}</span>
-            <span style={s.statLabel}>Total Products</span>
+            <span style={s.statLabel}>{t('seller.totalProducts')}</span>
           </div>
           <div style={s.statCard}>
             <span style={s.statNum}>{available}</span>
-            <span style={s.statLabel}>Available</span>
+            <span style={s.statLabel}>{t('seller.available')}</span>
           </div>
           <div style={s.statCard}>
             <span style={s.statNum}>{totalStock.toLocaleString()}</span>
-            <span style={s.statLabel}>Total Stock</span>
+            <span style={s.statLabel}>{t('seller.totalStock')}</span>
           </div>
         </div>
 
@@ -164,21 +166,21 @@ const SellerPage = () => {
               <path d="M16 40h16M24 36v4"/>
               <path d="M18 20h12M18 26h8"/>
             </svg>
-            <p style={s.emptyTitle}>No products yet</p>
-            <p style={s.emptyDesc}>Add your first product to start selling</p>
+            <p style={s.emptyTitle}>{t('seller.noProducts')}</p>
+            <p style={s.emptyDesc}>{t('seller.noProductsDesc')}</p>
             <button className="add-prod-btn" style={{ marginTop: '8px' }} onClick={() => navigate('/seller/create')}>
-              Create First Product
+              {t('seller.createFirst')}
             </button>
           </div>
         ) : (
           <div style={s.tableWrap}>
             <div style={s.tableHead}>
-              <span>Product</span>
-              <span>Type</span>
-              <span>Price</span>
-              <span>Stock</span>
-              <span>Status</span>
-              <span>Actions</span>
+              <span>{t('admin.colProduct')}</span>
+              <span>{t('admin.colType')}</span>
+              <span>{t('admin.colPrice')}</span>
+              <span>{t('admin.colStock')}</span>
+              <span>{t('admin.colStatus')}</span>
+              <span>{t('common.actions')}</span>
             </div>
             {products.map((product, i) => (
               <div
@@ -211,7 +213,7 @@ const SellerPage = () => {
 
                 <span>
                   <span style={product.is_available ? s.activeBadge : s.hiddenBadge}>
-                    {product.is_available ? 'Active' : 'Hidden'}
+                    {product.is_available ? t('seller.active') : t('seller.hidden')}
                   </span>
                 </span>
 
@@ -220,14 +222,14 @@ const SellerPage = () => {
                     className="edit-btn"
                     onClick={() => navigate(`/seller/edit/${product.id}`)}
                   >
-                    Edit
+                    {t('common.edit')}
                   </button>
                   <button
                     className="del-btn"
                     onClick={() => handleDelete(product.id)}
                     disabled={deleting === product.id}
                   >
-                    {deleting === product.id ? '...' : 'Delete'}
+                    {deleting === product.id ? '...' : t('common.delete')}
                   </button>
                 </div>
               </div>

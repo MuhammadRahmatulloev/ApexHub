@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
@@ -20,6 +21,7 @@ const ProductDetailPage = () => {
   const { id } = useParams()
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { t } = useTranslation()
 
   const [product, setProduct] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -58,10 +60,10 @@ const ProductDetailPage = () => {
     setAdding(true)
     try {
       await api.post('/orders/cart/add_item/', { product_id: product.id, quantity })
-      setAddedMsg('Added to cart!')
+      setAddedMsg(t('products.added'))
       setTimeout(() => setAddedMsg(''), 2500)
     } catch {
-      setAddedMsg('Error adding to cart')
+      setAddedMsg(t('products.cartError'))
       setTimeout(() => setAddedMsg(''), 2000)
     }
     setAdding(false)
@@ -94,10 +96,10 @@ const ProductDetailPage = () => {
       })
       setReviews(prev => [res.data, ...prev])
       setReviewForm({ rating: 5, text: '' })
-      setReviewMsg('Review submitted!')
+      setReviewMsg(t('products.reviewSubmitted'))
       setTimeout(() => setReviewMsg(''), 3000)
     } catch (err) {
-      const msg = err.response?.data?.non_field_errors?.[0] || 'Error submitting review'
+      const msg = err.response?.data?.non_field_errors?.[0] || t('products.reviewError')
       setReviewMsg(msg)
     }
     setSubmittingReview(false)
@@ -258,7 +260,7 @@ const ProductDetailPage = () => {
       `}</style>
 
       <div style={s.breadcrumb}>
-        <Link to="/products" style={s.breadLink}>Products</Link>
+        <Link to="/products" style={s.breadLink}>{t('nav.products')}</Link>
         <span style={s.breadSep}>/</span>
         {product.category && (
           <>
@@ -282,7 +284,7 @@ const ProductDetailPage = () => {
               )
             }
             {!product.is_available && (
-              <div style={s.outBadge}>Out of Stock</div>
+              <div style={s.outBadge}>{t('products.outOfStock')}</div>
             )}
           </div>
 
@@ -316,7 +318,7 @@ const ProductDetailPage = () => {
             <div style={s.ratingRow}>
               <StarRating rating={product.average_rating} />
               <span style={s.ratingVal}>{Number(product.average_rating).toFixed(1)}</span>
-              <span style={s.ratingCount}>({product.total_reviews} reviews)</span>
+              <span style={s.ratingCount}>({product.total_reviews} {t('products.reviews')})</span>
             </div>
           )}
 
@@ -327,10 +329,10 @@ const ProductDetailPage = () => {
                 <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--success)" strokeWidth="1.5" strokeLinecap="round">
                   <path d="M2 6l3 3 5-5"/>
                 </svg>
-                In stock · {product.stock} left
+                {t('products.inStock')} · {t('products.lowStock', { count: product.stock })}
               </span>
             ) : (
-              <span style={s.outStock}>Out of stock</span>
+              <span style={s.outStock}>{t('products.outOfStock')}</span>
             )}
           </div>
 
@@ -339,7 +341,7 @@ const ProductDetailPage = () => {
           )}
 
           <div style={s.qtyRow}>
-            <span style={s.qtyLabel}>Quantity</span>
+            <span style={s.qtyLabel}>{t('products.quantity')}</span>
             <div style={s.qtyControls}>
               <button
                 className="qty-btn"
@@ -365,14 +367,19 @@ const ProductDetailPage = () => {
               onClick={addToCart}
               disabled={adding || !product.is_available || product.stock === 0}
             >
-              {adding ? 'Adding...' : product.stock === 0 ? 'Out of Stock' : `Add to Cart · $${(product.price * quantity).toFixed(2)}`}
+              {adding
+                ? t('products.adding')
+                : product.stock === 0
+                  ? t('products.outOfStock')
+                  : `${t('products.addToCart')} · $${(product.price * quantity).toFixed(2)}`
+              }
             </button>
             {user && (
               <button
                 className="fav-btn"
                 onClick={toggleFavorite}
                 disabled={favLoading}
-                title={isFavorite ? 'Remove from favorites' : 'Add to favorites'}
+                title={isFavorite ? t('favorites.remove') : t('products.addToCart')}
               >
                 <svg width="20" height="20" viewBox="0 0 20 20" fill={isFavorite ? 'var(--danger)' : 'none'} stroke={isFavorite ? 'var(--danger)' : 'var(--text-secondary)'} strokeWidth="1.5" strokeLinecap="round">
                   <path d="M10 17s-7-4.5-7-9a4 4 0 0 1 7-2.7A4 4 0 0 1 17 8c0 4.5-7 9-7 9z"/>
@@ -394,7 +401,7 @@ const ProductDetailPage = () => {
             <div style={s.sellerInfo}>
               <div style={s.sellerAvatar}>{product.seller_name[0]?.toUpperCase()}</div>
               <div>
-                <p style={s.sellerLabel}>Seller</p>
+                <p style={s.sellerLabel}>{t('products.seller')}</p>
                 <p style={s.sellerName}>{product.seller_name}</p>
               </div>
             </div>
@@ -409,14 +416,14 @@ const ProductDetailPage = () => {
               className={activeTab === 'specs' ? 'tab-btn-active' : 'tab-btn'}
               onClick={() => setActiveTab('specs')}
             >
-              Specifications
+              {t('products.specifications')}
             </button>
           )}
           <button
             className={activeTab === 'reviews' ? 'tab-btn-active' : 'tab-btn'}
             onClick={() => setActiveTab('reviews')}
           >
-            Reviews {reviews.length > 0 && `(${reviews.length})`}
+            {t('products.reviewsTab')} {reviews.length > 0 && `(${reviews.length})`}
           </button>
         </div>
 
@@ -436,7 +443,7 @@ const ProductDetailPage = () => {
             <div>
               {user && (
                 <div style={s.reviewForm}>
-                  <p style={s.reviewFormTitle}>Write a Review</p>
+                  <p style={s.reviewFormTitle}>{t('products.writeReview')}</p>
                   <div style={s.starPicker}>
                     {[1,2,3,4,5].map(star => (
                       <button
@@ -453,7 +460,7 @@ const ProductDetailPage = () => {
                   </div>
                   <textarea
                     className="review-textarea"
-                    placeholder="Share your experience with this product..."
+                    placeholder={t('products.reviewPlaceholder')}
                     value={reviewForm.text}
                     onChange={e => setReviewForm(f => ({ ...f, text: e.target.value }))}
                     rows={3}
@@ -464,7 +471,7 @@ const ProductDetailPage = () => {
                       onClick={submitReview}
                       disabled={submittingReview}
                     >
-                      {submittingReview ? 'Submitting...' : 'Submit Review'}
+                      {submittingReview ? t('products.submittingReview') : t('products.submitReview')}
                     </button>
                     {reviewMsg && (
                       <span style={{ color: reviewMsg.includes('Error') || reviewMsg.includes('already') ? 'var(--danger)' : 'var(--success)', fontSize: '13px' }}>
@@ -484,7 +491,7 @@ const ProductDetailPage = () => {
                   <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round">
                     <path d="M16 2l2.4 7.2H26l-6.2 4.5 2.4 7.3L16 17l-6.2 4 2.4-7.3L6 9.2h7.6z"/>
                   </svg>
-                  <p style={s.noReviewsText}>No reviews yet. Be the first!</p>
+                  <p style={s.noReviewsText}>{t('products.noReviews')}</p>
                 </div>
               ) : (
                 <div style={s.reviewsList}>
@@ -890,7 +897,7 @@ const s = {
   reviewDate: {
     color: 'var(--text-muted)',
     fontSize: '11px',
-  },  
+  },
   reviewText: {
     color: 'var(--text-secondary)',
     fontSize: '13px',

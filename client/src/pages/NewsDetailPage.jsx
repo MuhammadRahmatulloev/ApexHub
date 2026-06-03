@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const NewsDetailPage = () => {
+  const { t } = useTranslation()
   const { id } = useParams()
   const navigate = useNavigate()
   const [item, setItem] = useState(null)
@@ -16,12 +18,12 @@ const NewsDetailPage = () => {
       .finally(() => setLoading(false))
   }, [id])
 
-  if (loading) return <Layout><p style={{ color: 'var(--text-secondary)' }}>Loading...</p></Layout>
+  if (loading) return <Layout><p style={{ color: 'var(--text-secondary)' }}>{t('common.loading')}</p></Layout>
   if (!item) return null
 
   return (
     <Layout>
-      <button style={s.back} onClick={() => navigate('/news')}>← Back to News</button>
+      <button style={s.back} onClick={() => navigate('/news')}>{t('news.back')}</button>
       {item.image && (
         <div style={s.imgWrap}>
           <img src={item.image} alt={item.title} style={s.img} />

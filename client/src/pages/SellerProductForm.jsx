@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
@@ -8,6 +9,7 @@ const SellerProductForm = () => {
   const { id } = useParams()
   const isEdit = Boolean(id)
   const { user } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -62,7 +64,7 @@ const SellerProductForm = () => {
         })
         if (p.images?.length > 0) setExistingImages(p.images)
       })
-      .catch(() => setError('Failed to load product'))
+      .catch(() => setError(t('seller.form.loadError')))
       .finally(() => setFetching(false))
   }, [id])
 
@@ -134,7 +136,7 @@ const SellerProductForm = () => {
         await api.delete(`/products/${productId}/delete_image/?image_id=${imgId}`).catch(() => {})
       }
 
-      setSuccess(isEdit ? 'Product updated!' : 'Product created!')
+      setSuccess(isEdit ? t('seller.form.saveChanges') : t('seller.form.create'))
       if (!isEdit) setTimeout(() => navigate('/seller'), 1200)
     } catch (err) {
       const data = err.response?.data
@@ -142,7 +144,7 @@ const SellerProductForm = () => {
         const first = Object.values(data)[0]
         setError(Array.isArray(first) ? first[0] : String(first))
       } else {
-        setError('Something went wrong')
+        setError(t('common.error'))
       }
     }
     setLoading(false)
@@ -321,8 +323,8 @@ const SellerProductForm = () => {
 
       <div style={s.wrap}>
         <div style={s.topBar}>
-          <button className="back-btn" onClick={() => navigate('/seller')}>← Back</button>
-          <h1 style={s.title}>{isEdit ? 'Edit Product' : 'New Product'}</h1>
+          <button className="back-btn" onClick={() => navigate('/seller')}>← {t('common.back')}</button>
+          <h1 style={s.title}>{isEdit ? t('seller.form.editProduct') : t('seller.form.newProduct')}</h1>
         </div>
 
         {error && <div style={s.errorBox}>{error}</div>}
@@ -331,14 +333,14 @@ const SellerProductForm = () => {
         <form onSubmit={handleSubmit}>
           <div style={s.grid}>
             <div style={s.card}>
-              <p style={s.cardTitle}>Basic Info</p>
+              <p style={s.cardTitle}>{t('seller.form.basicInfo')}</p>
 
               <div style={s.field}>
-                <label style={s.label}>Product Name</label>
+                <label style={s.label}>{t('seller.form.productName')}</label>
                 <input
                   className="form-input"
                   name="name"
-                  placeholder="e.g. Gaming Laptop RTX 4070"
+                  placeholder={t('seller.form.namePlaceholder')}
                   value={form.name}
                   onChange={handleNameChange}
                   required
@@ -346,11 +348,11 @@ const SellerProductForm = () => {
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Slug</label>
+                <label style={s.label}>{t('seller.form.slug')}</label>
                 <input
                   className="form-input"
                   name="slug"
-                  placeholder="auto-generated"
+                  placeholder={t('seller.form.slugPlaceholder')}
                   value={form.slug}
                   onChange={handleChange}
                   required
@@ -358,11 +360,11 @@ const SellerProductForm = () => {
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Description</label>
+                <label style={s.label}>{t('seller.form.description')}</label>
                 <textarea
                   className="form-textarea"
                   name="description"
-                  placeholder="Describe your product..."
+                  placeholder={t('seller.form.descPlaceholder')}
                   value={form.description}
                   onChange={handleChange}
                   rows={4}
@@ -370,21 +372,21 @@ const SellerProductForm = () => {
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Product Type</label>
+                <label style={s.label}>{t('seller.form.productType')}</label>
                 <select className="form-select" name="product_type" value={form.product_type} onChange={handleChange}>
-                  <option value="LAPTOP">Laptop</option>
-                  <option value="PC">PC</option>
-                  <option value="COMPONENT">Component</option>
-                  <option value="PERIPHERAL">Peripheral</option>
+                  <option value="LAPTOP">{t('products.laptops')}</option>
+                  <option value="PC">{t('products.pcs')}</option>
+                  <option value="COMPONENT">{t('products.components')}</option>
+                  <option value="PERIPHERAL">{t('products.peripherals')}</option>
                 </select>
               </div>
             </div>
 
             <div style={s.card}>
-              <p style={s.cardTitle}>Pricing & Stock</p>
+              <p style={s.cardTitle}>{t('seller.form.pricingStock')}</p>
 
               <div style={s.field}>
-                <label style={s.label}>Price ($)</label>
+                <label style={s.label}>{t('seller.form.price')}</label>
                 <input
                   className="form-input"
                   name="price"
@@ -399,7 +401,7 @@ const SellerProductForm = () => {
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Stock</label>
+                <label style={s.label}>{t('seller.form.stock')}</label>
                 <input
                   className="form-input"
                   name="stock"
@@ -413,17 +415,17 @@ const SellerProductForm = () => {
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Category</label>
+                <label style={s.label}>{t('seller.form.category')}</label>
                 <select className="form-select" name="category" value={form.category} onChange={handleChange}>
-                  <option value="">No category</option>
+                  <option value="">{t('seller.form.noCategory')}</option>
                   {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
                 </select>
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Brand</label>
+                <label style={s.label}>{t('seller.form.brand')}</label>
                 <select className="form-select" name="brand" value={form.brand} onChange={handleChange}>
-                  <option value="">No brand</option>
+                  <option value="">{t('seller.form.noBrand')}</option>
                   {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
               </div>
@@ -442,22 +444,22 @@ const SellerProductForm = () => {
                     transform: form.is_available ? 'translateX(18px)' : 'translateX(2px)',
                   }} />
                 </div>
-                <span style={s.checkLabel}>Available for purchase</span>
+                <span style={s.checkLabel}>{t('seller.form.available')}</span>
               </div>
             </div>
           </div>
 
           <div style={s.card}>
             <div style={s.imgHeader}>
-              <p style={s.cardTitle}>Product Images</p>
-              <span style={s.imgCount}>{totalImages} image{totalImages !== 1 ? 's' : ''}</span>
+              <p style={s.cardTitle}>{t('seller.form.images')}</p>
+              <span style={s.imgCount}>{totalImages}</span>
             </div>
 
             <div style={s.imgGrid}>
               {existingImages.map(img => (
                 <div key={img.id} style={s.imgThumb}>
                   <img src={img.image} alt="" style={s.thumbImg} />
-                  {img.is_main && <span style={s.mainBadge}>Main</span>}
+                  {img.is_main && <span style={s.mainBadge}>{t('seller.form.main')}</span>}
                   <button type="button" className="img-remove-btn" onClick={() => removeExistingImage(img.id)}>✕</button>
                 </div>
               ))}
@@ -465,8 +467,8 @@ const SellerProductForm = () => {
               {newImagePreviews.map((preview, i) => (
                 <div key={`new-${i}`} style={s.imgThumb}>
                   <img src={preview} alt="" style={s.thumbImg} />
-                  {existingImages.length === 0 && i === 0 && <span style={s.mainBadge}>Main</span>}
-                  <span style={s.newBadge}>New</span>
+                  {existingImages.length === 0 && i === 0 && <span style={s.mainBadge}>{t('seller.form.main')}</span>}
+                  <span style={s.newBadge}>{t('seller.form.new')}</span>
                   <button type="button" className="img-remove-btn" onClick={() => removeNewImage(i)}>✕</button>
                 </div>
               ))}
@@ -477,7 +479,7 @@ const SellerProductForm = () => {
                   <circle cx="7" cy="9" r="1.8"/>
                   <path d="M1 14l4.5-4.5 3 3 3-3 4.5 4.5"/>
                 </svg>
-                <span style={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '600' }}>Add Photo</span>
+                <span style={{ color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '600' }}>{t('seller.form.addPhoto')}</span>
               </div>
             </div>
 
@@ -490,15 +492,15 @@ const SellerProductForm = () => {
               onChange={handleImageSelect}
             />
 
-            <p style={s.imgHint}>First image will be the main image. JPG, PNG, WebP supported.</p>
+            <p style={s.imgHint}>{t('seller.form.imagesHint')}</p>
           </div>
 
           <div style={s.formActions}>
             <button type="button" className="cancel-btn" onClick={() => navigate('/seller')}>
-              Cancel
+              {t('common.cancel')}
             </button>
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Create Product'}
+              {loading ? t('common.saving') : isEdit ? t('seller.form.saveChanges') : t('seller.form.create')}
             </button>
           </div>
         </form>

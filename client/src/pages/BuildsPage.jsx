@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
@@ -8,18 +9,8 @@ const STATUS_COLORS = {
   AI_GENERATED: 'var(--accent)',
 }
 
-const COMPONENT_ICONS = {
-  CPU: '⚙',
-  GPU: '🎮',
-  RAM: '💾',
-  STORAGE: '💿',
-  MOTHERBOARD: '🔧',
-  PSU: '⚡',
-  CASE: '📦',
-  COOLING: '❄',
-}
-
 const BuildsPage = () => {
+  const { t } = useTranslation()
   const [builds, setBuilds] = useState([])
   const [loading, setLoading] = useState(true)
   const [prompt, setPrompt] = useState('')
@@ -58,6 +49,13 @@ const BuildsPage = () => {
   const toggleExpand = (id) => {
     setExpandedId(prev => prev === id ? null : id)
   }
+
+  const hints = [
+    t('builds.ai.hint1'),
+    t('builds.ai.hint2'),
+    t('builds.ai.hint3'),
+    t('builds.ai.hint4'),
+  ]
 
   return (
     <Layout>
@@ -198,15 +196,15 @@ const BuildsPage = () => {
       <div style={s.page}>
         <div style={s.topBar}>
           <div>
-            <h1 style={s.title}>PC Builds</h1>
-            <p style={s.sub}>Configure your dream PC or let AI do it for you</p>
+            <h1 style={s.title}>{t('builds.title')}</h1>
+            <p style={s.sub}>{t('builds.subtitle')}</p>
           </div>
           <div style={s.tabs}>
             <button className={tab === 'my' ? 'build-tab-active' : 'build-tab'} onClick={() => setTab('my')}>
-              My Builds {builds.length > 0 && `(${builds.length})`}
+              {t('builds.myBuilds')} {builds.length > 0 && `(${builds.length})`}
             </button>
             <button className={tab === 'ai' ? 'build-tab-active' : 'build-tab'} onClick={() => setTab('ai')}>
-              AI Generator
+              {t('builds.aiGenerator')}
             </button>
           </div>
         </div>
@@ -223,28 +221,28 @@ const BuildsPage = () => {
                   </svg>
                 </div>
                 <div>
-                  <h2 style={s.aiTitle}>AI PC Builder</h2>
-                  <p style={s.aiSub}>Describe your needs and AI will build the perfect config</p>
+                  <h2 style={s.aiTitle}>{t('builds.ai.title')}</h2>
+                  <p style={s.aiSub}>{t('builds.ai.subtitle')}</p>
                 </div>
               </div>
 
               <div style={s.aiForm}>
                 <div style={s.fieldWrap}>
-                  <label style={s.fieldLabel}>What do you need?</label>
+                  <label style={s.fieldLabel}>{t('builds.ai.whatNeed')}</label>
                   <textarea
                     className="ai-textarea"
-                    placeholder="Example: Gaming PC for modern games at high settings, mainly FPS. Need smooth 144fps gameplay."
+                    placeholder={t('builds.ai.prompt')}
                     value={prompt}
                     onChange={e => setPrompt(e.target.value)}
                     rows={4}
                   />
                 </div>
                 <div style={s.fieldWrap}>
-                  <label style={s.fieldLabel}>Budget (optional, USD)</label>
+                  <label style={s.fieldLabel}>{t('builds.ai.budget')}</label>
                   <input
                     className="ai-input"
                     type="number"
-                    placeholder="e.g. 1200"
+                    placeholder={t('builds.ai.budgetPlaceholder')}
                     value={budget}
                     onChange={e => setBudget(e.target.value)}
                   />
@@ -253,26 +251,17 @@ const BuildsPage = () => {
                   {generating ? (
                     <span style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px' }}>
                       <span style={{ width: '16px', height: '16px', border: '2px solid rgba(255,255,255,0.3)', borderTop: '2px solid #fff', borderRadius: '50%', animation: 'spin 0.7s linear infinite', display: 'inline-block' }} />
-                      Generating build...
+                      {t('builds.ai.generating')}
                     </span>
-                  ) : 'Generate Build'}
+                  ) : t('builds.ai.generate')}
                 </button>
               </div>
 
               <div style={s.aiHints}>
-                <p style={s.aiHintTitle}>Try asking for:</p>
+                <p style={s.aiHintTitle}>{t('builds.ai.hints')}</p>
                 <div style={s.hintChips}>
-                  {[
-                    'Budget gaming PC under $800',
-                    'Video editing workstation',
-                    'Silent home office PC',
-                    'High-end streaming setup',
-                  ].map(hint => (
-                    <button
-                      key={hint}
-                      style={s.hintChip}
-                      onClick={() => setPrompt(hint)}
-                    >
+                  {hints.map(hint => (
+                    <button key={hint} style={s.hintChip} onClick={() => setPrompt(hint)}>
                       {hint}
                     </button>
                   ))}
@@ -298,13 +287,10 @@ const BuildsPage = () => {
                     <path d="M14 20h12M20 14v12"/>
                   </svg>
                 </div>
-                <p style={s.emptyTitle}>No builds yet</p>
-                <p style={s.emptyDesc}>Use the AI Generator to create your first build</p>
-                <button
-                  style={s.emptyBtn}
-                  onClick={() => setTab('ai')}
-                >
-                  Open AI Generator
+                <p style={s.emptyTitle}>{t('builds.noBuilds')}</p>
+                <p style={s.emptyDesc}>{t('builds.noBuildsDesc')}</p>
+                <button style={s.emptyBtn} onClick={() => setTab('ai')}>
+                  {t('builds.openAi')}
                 </button>
               </div>
             ) : (
@@ -329,7 +315,7 @@ const BuildsPage = () => {
                       <div style={s.cardHeadRight}>
                         <span style={s.buildPrice}>${build.total_price}</span>
                         <button className="delete-build-btn" onClick={(e) => deleteBuild(build.id, e)}>
-                          Delete
+                          {t('builds.delete')}
                         </button>
                         <span style={{ color: 'var(--text-muted)', fontSize: '13px', transform: expandedId === build.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>
                           ▾
@@ -343,7 +329,7 @@ const BuildsPage = () => {
 
                     <div style={s.cardStats}>
                       <span style={s.statChip}>
-                        {build.components.length} components
+                        {build.components.length} {t('builds.components')}
                       </span>
                       <span style={{
                         ...s.compatChip,
@@ -351,7 +337,7 @@ const BuildsPage = () => {
                         color: build.is_compatible ? 'var(--success)' : 'var(--danger)',
                         border: `1px solid ${build.is_compatible ? 'rgba(52,211,153,0.25)' : 'rgba(248,113,113,0.25)'}`,
                       }}>
-                        {build.is_compatible ? '✓ Compatible' : '⚠ Issues'}
+                        {build.is_compatible ? `✓ ${t('builds.compatible')}` : `⚠ ${t('builds.issues')}`}
                       </span>
                     </div>
 
@@ -361,7 +347,7 @@ const BuildsPage = () => {
 
                         {build.components.length > 0 && (
                           <div style={s.componentsWrap}>
-                            <p style={s.sectionLabel}>Components</p>
+                            <p style={s.sectionLabel}>{t('builds.components')}</p>
                             <div style={s.compsGrid}>
                               {build.components.map(comp => (
                                 <div key={comp.id} className="comp-chip">
@@ -375,7 +361,7 @@ const BuildsPage = () => {
 
                         {build.compatibility_notes && (
                           <div style={s.notesWrap}>
-                            <p style={s.sectionLabel}>Notes</p>
+                            <p style={s.sectionLabel}>{t('builds.notes')}</p>
                             <p style={s.notesText}>{build.compatibility_notes}</p>
                           </div>
                         )}
@@ -393,9 +379,7 @@ const BuildsPage = () => {
 }
 
 const s = {
-  page: {
-    animation: 'fadeUp 0.35s ease both',
-  },
+  page: { animation: 'fadeUp 0.35s ease both' },
   topBar: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -404,24 +388,10 @@ const s = {
     flexWrap: 'wrap',
     gap: '16px',
   },
-  title: {
-    color: 'var(--text-primary)',
-    fontSize: '26px',
-    fontWeight: '700',
-    marginBottom: '4px',
-    letterSpacing: '-0.3px',
-  },
-  sub: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  tabs: {
-    display: 'flex',
-    gap: '8px',
-  },
-  aiSection: {
-    maxWidth: '640px',
-  },
+  title: { color: 'var(--text-primary)', fontSize: '26px', fontWeight: '700', marginBottom: '4px', letterSpacing: '-0.3px' },
+  sub: { color: 'var(--text-secondary)', fontSize: '13px' },
+  tabs: { display: 'flex', gap: '8px' },
+  aiSection: { maxWidth: '640px' },
   aiCard: {
     background: 'var(--bg-card)',
     border: '1px solid var(--border)',
@@ -429,12 +399,7 @@ const s = {
     padding: '28px',
     animation: 'fadeUp 0.3s ease both',
   },
-  aiCardHeader: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-    marginBottom: '24px',
-  },
+  aiCardHeader: { display: 'flex', alignItems: 'center', gap: '14px', marginBottom: '24px' },
   aiIconWrap: {
     width: '48px',
     height: '48px',
@@ -446,36 +411,12 @@ const s = {
     justifyContent: 'center',
     flexShrink: 0,
   },
-  aiTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '18px',
-    fontWeight: '700',
-    marginBottom: '3px',
-  },
-  aiSub: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  aiForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '14px',
-    marginBottom: '20px',
-  },
-  fieldWrap: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  fieldLabel: {
-    color: 'var(--text-secondary)',
-    fontSize: '12px',
-    fontWeight: '500',
-  },
-  aiHints: {
-    borderTop: '1px solid var(--border)',
-    paddingTop: '16px',
-  },
+  aiTitle: { color: 'var(--text-primary)', fontSize: '18px', fontWeight: '700', marginBottom: '3px' },
+  aiSub: { color: 'var(--text-secondary)', fontSize: '13px' },
+  aiForm: { display: 'flex', flexDirection: 'column', gap: '14px', marginBottom: '20px' },
+  fieldWrap: { display: 'flex', flexDirection: 'column', gap: '6px' },
+  fieldLabel: { color: 'var(--text-secondary)', fontSize: '12px', fontWeight: '500' },
+  aiHints: { borderTop: '1px solid var(--border)', paddingTop: '16px' },
   aiHintTitle: {
     color: 'var(--text-muted)',
     fontSize: '11px',
@@ -484,11 +425,7 @@ const s = {
     letterSpacing: '0.6px',
     marginBottom: '10px',
   },
-  hintChips: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '6px',
-  },
+  hintChips: { display: 'flex', flexWrap: 'wrap', gap: '6px' },
   hintChip: {
     background: 'var(--bg-hover)',
     border: '1px solid var(--border)',
@@ -501,11 +438,7 @@ const s = {
     transition: 'border-color 0.15s, color 0.15s',
   },
   mySection: {},
-  buildsGrid: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
+  buildsGrid: { display: 'flex', flexDirection: 'column', gap: '12px' },
   skeletonCard: {
     height: '96px',
     borderRadius: '14px',
@@ -535,15 +468,8 @@ const s = {
     justifyContent: 'center',
     marginBottom: '4px',
   },
-  emptyTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '16px',
-    fontWeight: '600',
-  },
-  emptyDesc: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
+  emptyTitle: { color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' },
+  emptyDesc: { color: 'var(--text-secondary)', fontSize: '13px' },
   emptyBtn: {
     marginTop: '8px',
     background: 'var(--accent)',
@@ -564,13 +490,7 @@ const s = {
     padding: '18px 20px',
     gap: '12px',
   },
-  cardHeadLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    flex: 1,
-    minWidth: 0,
-  },
+  cardHeadLeft: { display: 'flex', alignItems: 'center', gap: '12px', flex: 1, minWidth: 0 },
   buildStatusDot: (status) => ({
     width: '8px',
     height: '8px',
@@ -587,24 +507,9 @@ const s = {
     textOverflow: 'ellipsis',
     whiteSpace: 'nowrap',
   },
-  buildStatus: {
-    fontSize: '11px',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  cardHeadRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    flexShrink: 0,
-  },
-  buildPrice: {
-    color: 'var(--accent)',
-    fontSize: '18px',
-    fontWeight: '800',
-    letterSpacing: '-0.3px',
-  },
+  buildStatus: { fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  cardHeadRight: { display: 'flex', alignItems: 'center', gap: '10px', flexShrink: 0 },
+  buildPrice: { color: 'var(--accent)', fontSize: '18px', fontWeight: '800', letterSpacing: '-0.3px' },
   buildDesc: {
     color: 'var(--text-secondary)',
     fontSize: '13px',
@@ -613,13 +518,7 @@ const s = {
     paddingRight: '20px',
     paddingBottom: '12px',
   },
-  cardStats: {
-    display: 'flex',
-    gap: '8px',
-    paddingLeft: '20px',
-    paddingRight: '20px',
-    paddingBottom: '18px',
-  },
+  cardStats: { display: 'flex', gap: '8px', paddingLeft: '20px', paddingRight: '20px', paddingBottom: '18px' },
   statChip: {
     background: 'var(--bg-hover)',
     border: '1px solid var(--border)',
@@ -629,25 +528,10 @@ const s = {
     fontSize: '11px',
     fontWeight: '600',
   },
-  compatChip: {
-    borderRadius: '20px',
-    padding: '3px 10px',
-    fontSize: '11px',
-    fontWeight: '600',
-  },
-  expandedSection: {
-    paddingLeft: '20px',
-    paddingRight: '20px',
-    paddingBottom: '18px',
-  },
-  divider: {
-    height: '1px',
-    background: 'var(--border)',
-    marginBottom: '16px',
-  },
-  componentsWrap: {
-    marginBottom: '14px',
-  },
+  compatChip: { borderRadius: '20px', padding: '3px 10px', fontSize: '11px', fontWeight: '600' },
+  expandedSection: { paddingLeft: '20px', paddingRight: '20px', paddingBottom: '18px' },
+  divider: { height: '1px', background: 'var(--border)', marginBottom: '16px' },
+  componentsWrap: { marginBottom: '14px' },
   sectionLabel: {
     color: 'var(--text-muted)',
     fontSize: '10px',
@@ -656,24 +540,9 @@ const s = {
     letterSpacing: '0.8px',
     marginBottom: '10px',
   },
-  compsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
-    gap: '8px',
-  },
-  compType: {
-    color: 'var(--accent)',
-    fontSize: '10px',
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-  },
-  compName: {
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '500',
-    lineHeight: '1.4',
-  },
+  compsGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '8px' },
+  compType: { color: 'var(--accent)', fontSize: '10px', fontWeight: '700', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  compName: { color: 'var(--text-primary)', fontSize: '13px', fontWeight: '500', lineHeight: '1.4' },
   notesWrap: {},
   notesText: {
     color: 'var(--text-secondary)',

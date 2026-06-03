@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const NewsPage = () => {
+  const { t } = useTranslation()
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -16,11 +18,11 @@ const NewsPage = () => {
 
   return (
     <Layout>
-      <h1 style={s.title}>News</h1>
+      <h1 style={s.title}>{t('news.title')}</h1>
       {loading ? (
-        <p style={s.muted}>Loading...</p>
+        <p style={s.muted}>{t('common.loading')}</p>
       ) : !news.length ? (
-        <p style={s.muted}>No news yet</p>
+        <p style={s.muted}>{t('news.noNews')}</p>
       ) : (
         <div style={s.grid}>
           {news.map(item => (
@@ -28,13 +30,13 @@ const NewsPage = () => {
               <div style={s.imgWrap}>
                 {item.image
                   ? <img src={item.image} alt={item.title} style={s.img} />
-                  : <div style={s.noImg}>No image</div>
+                  : <div style={s.noImg} />
                 }
               </div>
               <div style={s.body}>
                 <p style={s.meta}>{new Date(item.created_at).toLocaleDateString()} · {item.author?.username}</p>
                 <h3 style={s.newsTitle}>{item.title}</h3>
-                <span style={s.readMore}>Read more →</span>
+                <span style={s.readMore}>{t('news.readMore')}</span>
               </div>
             </Link>
           ))}

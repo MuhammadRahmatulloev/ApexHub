@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
@@ -12,6 +13,7 @@ const STATUS_COLOR = {
 const PaymentsPage = () => {
   const [payments, setPayments] = useState([])
   const [loading, setLoading] = useState(true)
+  const { t } = useTranslation()
 
   useEffect(() => {
     api.get('/payments/my_payments/')
@@ -22,11 +24,11 @@ const PaymentsPage = () => {
 
   return (
     <Layout>
-      <h1 style={s.title}>My Payments</h1>
+      <h1 style={s.title}>{t('payments.title')}</h1>
       {loading ? (
-        <p style={s.muted}>Loading...</p>
+        <p style={s.muted}>{t('common.loading')}</p>
       ) : !payments.length ? (
-        <p style={s.muted}>No payments yet</p>
+        <p style={s.muted}>{t('payments.noPayments')}</p>
       ) : (
         <div style={s.list}>
           {payments.map(p => (

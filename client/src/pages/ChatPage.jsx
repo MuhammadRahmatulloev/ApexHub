@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react'
 import { marked } from 'marked'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
@@ -12,14 +13,8 @@ const MarkdownContent = ({ content }) => (
   />
 )
 
-const SUGGESTIONS = [
-  'Best gaming PC under $1000?',
-  'Compare RTX 4070 vs RX 7800 XT',
-  'What RAM do I need for video editing?',
-  'Best SSD for 2026?',
-]
-
 export default function ChatPage() {
+  const { t } = useTranslation()
   const [conversations, setConversations] = useState([])
   const [activeConvId, setActiveConvId] = useState(null)
   const [messages, setMessages] = useState([])
@@ -29,6 +24,13 @@ export default function ChatPage() {
   const [loadingMsgs, setLoadingMsgs] = useState(false)
   const endRef = useRef(null)
   const inputRef = useRef(null)
+
+  const SUGGESTIONS = [
+    t('chat.suggestions.s1'),
+    t('chat.suggestions.s2'),
+    t('chat.suggestions.s3'),
+    t('chat.suggestions.s4'),
+  ]
 
   useEffect(() => {
     api.get('/chat/conversations/')
@@ -102,13 +104,13 @@ export default function ChatPage() {
           content: res.data.ai_response,
         }
       ])
-    } catch (err) {
+    } catch {
       setMessages(prev => [
         ...prev,
         {
           id: `err_${Date.now()}`,
           role: 'assistant',
-          content: 'Sorry, something went wrong. Please try again.',
+          content: t('chat.errorMsg'),
           isError: true,
         }
       ])
@@ -208,15 +210,8 @@ export default function ChatPage() {
           transition: background 0.15s, transform 0.15s;
           flex-shrink: 0;
         }
-        .send-btn:hover:not(:disabled) {
-          background: var(--accent-hover);
-          transform: translateY(-1px);
-        }
-        .send-btn:disabled {
-          background: var(--bg-hover);
-          color: var(--text-muted);
-          cursor: not-allowed;
-        }
+        .send-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+        .send-btn:disabled { background: var(--bg-hover); color: var(--text-muted); cursor: not-allowed; }
         .sugg-btn {
           background: var(--bg-card);
           border: 1px solid var(--border);
@@ -230,11 +225,7 @@ export default function ChatPage() {
           transition: border-color 0.15s, color 0.15s, background 0.15s;
           width: 100%;
         }
-        .sugg-btn:hover {
-          border-color: var(--accent);
-          color: var(--text-primary);
-          background: var(--accent-dim);
-        }
+        .sugg-btn:hover { border-color: var(--accent); color: var(--text-primary); background: var(--accent-dim); }
         .chat-input {
           flex: 1;
           background: transparent;
@@ -268,8 +259,8 @@ export default function ChatPage() {
       <div style={s.layout}>
         <aside style={s.sidebar}>
           <div style={s.sidebarTop}>
-            <span style={s.sidebarTitle}>Chats</span>
-            <button className="new-conv-btn" onClick={newConv}>+ New</button>
+            <span style={s.sidebarTitle}>{t('chat.title')}</span>
+            <button className="new-conv-btn" onClick={newConv}>{t('chat.newChat')}</button>
           </div>
 
           <div style={s.convList}>
@@ -278,7 +269,7 @@ export default function ChatPage() {
                 {[1,2,3].map(i => <div key={i} style={{ ...s.convSkeleton, animationDelay: `${i * 0.1}s` }} />)}
               </div>
             ) : conversations.length === 0 ? (
-              <p style={s.sidebarEmpty}>No chats yet</p>
+              <p style={s.sidebarEmpty}>{t('chat.noChats')}</p>
             ) : conversations.map(c => (
               <div
                 key={c.id}
@@ -290,7 +281,7 @@ export default function ChatPage() {
                     <path d="M10 1H2a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h1l1 2 1-2h5a1 1 0 0 0 1-1V2a1 1 0 0 0-1-1z"/>
                   </svg>
                 </div>
-                <span style={s.convTitle}>{c.title || 'New Chat'}</span>
+                <span style={s.convTitle}>{c.title || t('chat.newChat')}</span>
                 <button className="conv-del" onClick={(e) => deleteConv(c.id, e)}>✕</button>
               </div>
             ))}
@@ -308,8 +299,8 @@ export default function ChatPage() {
                   <path d="M8 24v2M24 24v2M14 24h4"/>
                 </svg>
               </div>
-              <h2 style={s.welcomeTitle}>ApexHub AI Assistant</h2>
-              <p style={s.welcomeSub}>Ask me anything about PCs, laptops and components</p>
+              <h2 style={s.welcomeTitle}>{t('chat.welcomeTitle')}</h2>
+              <p style={s.welcomeSub}>{t('chat.welcomeSub')}</p>
               <div style={s.suggestions}>
                 {SUGGESTIONS.map(q => (
                   <button key={q} className="sugg-btn" onClick={() => { setInput(q); inputRef.current?.focus() }}>
@@ -326,7 +317,7 @@ export default function ChatPage() {
                 </div>
               ) : messages.length === 0 ? (
                 <div style={s.emptyConv}>
-                  <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>Start the conversation</p>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '13px' }}>{t('chat.startConversation')}</p>
                 </div>
               ) : messages.map((msg, i) => (
                 <div
@@ -383,7 +374,7 @@ export default function ChatPage() {
               <input
                 ref={inputRef}
                 className="chat-input"
-                placeholder="Ask about PCs, laptops, components..."
+                placeholder={t('chat.inputPlaceholder')}
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
@@ -401,10 +392,10 @@ export default function ChatPage() {
                       <animateTransform attributeName="transform" type="rotate" from="0 7 7" to="360 7 7" dur="0.8s" repeatCount="indefinite"/>
                     </path>
                   </svg>
-                ) : 'Send'}
+                ) : t('chat.send')}
               </button>
             </div>
-            <p style={s.inputHint}>Press Enter to send · Shift+Enter for new line</p>
+            <p style={s.inputHint}>{t('chat.hint')}</p>
           </div>
         </div>
       </div>

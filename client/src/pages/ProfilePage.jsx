@@ -1,12 +1,14 @@
 import { useState, useRef } from 'react'
 import { useAuth } from '../context/AuthContext'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const ProfilePage = () => {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
+  const { t } = useTranslation()
 
   const [tab, setTab] = useState('info')
   const [becoming, setBecoming] = useState(false)
@@ -44,7 +46,7 @@ const ProfilePage = () => {
       setBecomeMsg(res.data.message)
       setTimeout(() => window.location.reload(), 1500)
     } catch (err) {
-      setBecomeErr(err.response?.data?.error || 'Error')
+      setBecomeErr(err.response?.data?.error || t('common.error'))
     }
     setBecoming(false)
   }
@@ -59,12 +61,12 @@ const ProfilePage = () => {
         phone: editForm.phone || null,
         age: editForm.age ? parseInt(editForm.age) : null,
       })
-      setEditMsg('Profile updated!')
+      setEditMsg(t('profile.success'))
       setEditMode(false)
       setTimeout(() => window.location.reload(), 1000)
     } catch (err) {
       const d = err.response?.data
-      setEditErr(d ? Object.values(d)[0]?.[0] || 'Error' : 'Error')
+      setEditErr(d ? Object.values(d)[0]?.[0] || t('common.error') : t('common.error'))
     }
     setEditLoading(false)
   }
@@ -86,15 +88,15 @@ const ProfilePage = () => {
     setPwMsg('')
     setPwErr('')
     if (!pwForm.old_password || !pwForm.new_password || !pwForm.confirm) {
-      setPwErr('Fill all fields')
+      setPwErr(t('profile.errors.fillAll'))
       return
     }
     if (pwForm.new_password !== pwForm.confirm) {
-      setPwErr('Passwords do not match')
+      setPwErr(t('profile.errors.passwordMismatch'))
       return
     }
     if (pwForm.new_password.length < 8) {
-      setPwErr('New password must be at least 8 characters')
+      setPwErr(t('profile.errors.minLength'))
       return
     }
     setPwLoading(true)
@@ -103,11 +105,11 @@ const ProfilePage = () => {
         old_password: pwForm.old_password,
         new_password: pwForm.new_password,
       })
-      setPwMsg('Password changed successfully!')
+      setPwMsg(t('profile.passwordChanged'))
       setPwForm({ old_password: '', new_password: '', confirm: '' })
     } catch (err) {
       const d = err.response?.data
-      setPwErr(d?.error || d?.old_password?.[0] || 'Invalid current password')
+      setPwErr(d?.error || d?.old_password?.[0] || t('profile.errors.wrongPassword'))
     }
     setPwLoading(false)
   }
@@ -293,7 +295,7 @@ const ProfilePage = () => {
                 </div>
               </div>
               <input ref={avatarRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleAvatarChange} />
-              <p style={s.avatarHint}>Click to change photo</p>
+              <p style={s.avatarHint}>{t('profile.avatarHint')}</p>
             </div>
 
             <h2 style={s.userName}>{user.username}</h2>
@@ -304,17 +306,17 @@ const ProfilePage = () => {
             <div style={s.statsRow}>
               <div style={s.statItem}>
                 <span style={s.statNum}>{user.is_verified ? '✓' : '✗'}</span>
-                <span style={s.statLabel}>Verified</span>
+                <span style={s.statLabel}>{t('profile.verified')}</span>
               </div>
               <div style={s.statDivider} />
               <div style={s.statItem}>
                 <span style={s.statNum}>{user.age || '—'}</span>
-                <span style={s.statLabel}>Age</span>
+                <span style={s.statLabel}>{t('profile.age')}</span>
               </div>
               <div style={s.statDivider} />
               <div style={s.statItem}>
                 <span style={s.statNum}>{new Date(user.created_at).toLocaleDateString('ru-RU', { day: '2-digit', month: '2-digit', year: '2-digit' })}</span>
-                <span style={s.statLabel}>Joined</span>
+                <span style={s.statLabel}>{t('profile.memberSince')}</span>
               </div>
             </div>
 
@@ -324,11 +326,11 @@ const ProfilePage = () => {
                   {becomeMsg && <div style={s.successBox}>{becomeMsg}</div>}
                   {becomeErr && <div style={s.errorBox}>{becomeErr}</div>}
                   <button className="seller-btn" onClick={becomeSeller} disabled={becoming}>
-                    {becoming ? 'Processing...' : 'Become a Seller'}
+                    {becoming ? t('profile.processing') : t('profile.becomeSeller')}
                   </button>
                 </div>
               )}
-              <button className="danger-btn" onClick={handleLogout}>Logout</button>
+              <button className="danger-btn" onClick={handleLogout}>{t('nav.logout')}</button>
             </div>
           </div>
         </div>
@@ -337,10 +339,10 @@ const ProfilePage = () => {
           <div style={s.tabsCard}>
             <div style={s.tabsBar}>
               <button className={tab === 'info' ? 'profile-tab-active' : 'profile-tab'} onClick={() => setTab('info')}>
-                Personal Info
+                {t('profile.personalInfo')}
               </button>
               <button className={tab === 'security' ? 'profile-tab-active' : 'profile-tab'} onClick={() => setTab('security')}>
-                Security
+                {t('profile.security')}
               </button>
             </div>
 
@@ -349,8 +351,8 @@ const ProfilePage = () => {
                 <div style={{ animation: 'fadeUp 0.3s ease both' }}>
                   <div style={s.sectionHeader}>
                     <div>
-                      <p style={s.sectionTitle}>Personal Information</p>
-                      <p style={s.sectionSub}>Manage your profile details</p>
+                      <p style={s.sectionTitle}>{t('profile.personalInfo')}</p>
+                      <p style={s.sectionSub}>{t('profile.personalInfoSub')}</p>
                     </div>
                     {!editMode && (
                       <button
@@ -360,7 +362,7 @@ const ProfilePage = () => {
                         <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
                           <path d="M9 2l2 2-7 7H2v-2z"/>
                         </svg>
-                        Edit
+                        {t('profile.edit')}
                       </button>
                     )}
                   </div>
@@ -370,7 +372,7 @@ const ProfilePage = () => {
 
                   <div style={s.fieldsGrid}>
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Username</label>
+                      <label style={s.fieldLabel}>{t('profile.username')}</label>
                       {editMode
                         ? <input className="profile-input" value={editForm.username} onChange={e => setEditForm(p => ({ ...p, username: e.target.value }))} />
                         : <div style={s.fieldValue}>{user.username || '—'}</div>
@@ -378,12 +380,12 @@ const ProfilePage = () => {
                     </div>
 
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Email</label>
+                      <label style={s.fieldLabel}>{t('profile.email')}</label>
                       <div style={{ ...s.fieldValue, color: 'var(--text-secondary)' }}>{user.email}</div>
                     </div>
 
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Phone</label>
+                      <label style={s.fieldLabel}>{t('profile.phone')}</label>
                       {editMode
                         ? <input className="profile-input" placeholder="+992..." value={editForm.phone} onChange={e => setEditForm(p => ({ ...p, phone: e.target.value }))} />
                         : <div style={s.fieldValue}>{user.phone || '—'}</div>
@@ -391,7 +393,7 @@ const ProfilePage = () => {
                     </div>
 
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Age</label>
+                      <label style={s.fieldLabel}>{t('profile.age')}</label>
                       {editMode
                         ? <input className="profile-input" type="number" min="13" placeholder="18" value={editForm.age} onChange={e => setEditForm(p => ({ ...p, age: e.target.value }))} />
                         : <div style={s.fieldValue}>{user.age || '—'}</div>
@@ -399,21 +401,21 @@ const ProfilePage = () => {
                     </div>
 
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Role</label>
+                      <label style={s.fieldLabel}>{t('profile.role')}</label>
                       <div style={s.fieldValue}>{user.role}</div>
                     </div>
 
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Member since</label>
+                      <label style={s.fieldLabel}>{t('profile.memberSince')}</label>
                       <div style={s.fieldValue}>{new Date(user.created_at).toLocaleDateString()}</div>
                     </div>
                   </div>
 
                   {editMode && (
                     <div style={s.editActions}>
-                      <button className="cancel-btn" onClick={() => { setEditMode(false); setEditErr('') }}>Cancel</button>
+                      <button className="cancel-btn" onClick={() => { setEditMode(false); setEditErr('') }}>{t('profile.cancel')}</button>
                       <button className="save-btn" onClick={handleEditSave} disabled={editLoading}>
-                        {editLoading ? 'Saving...' : 'Save Changes'}
+                        {editLoading ? t('profile.saving') : t('profile.save')}
                       </button>
                     </div>
                   )}
@@ -424,8 +426,8 @@ const ProfilePage = () => {
                 <div style={{ animation: 'fadeUp 0.3s ease both' }}>
                   <div style={s.sectionHeader}>
                     <div>
-                      <p style={s.sectionTitle}>Change Password</p>
-                      <p style={s.sectionSub}>Update your account password</p>
+                      <p style={s.sectionTitle}>{t('profile.changePassword')}</p>
+                      <p style={s.sectionSub}>{t('profile.changePasswordSub')}</p>
                     </div>
                   </div>
 
@@ -434,12 +436,12 @@ const ProfilePage = () => {
 
                   <div style={s.pwFields}>
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Current Password</label>
+                      <label style={s.fieldLabel}>{t('profile.currentPassword')}</label>
                       <div className="pw-input-wrap">
                         <input
                           className="profile-input"
                           type={showOld ? 'text' : 'password'}
-                          placeholder="Enter current password"
+                          placeholder={t('profile.currentPasswordPlaceholder')}
                           style={{ paddingRight: '42px' }}
                           value={pwForm.old_password}
                           onChange={e => setPwForm(p => ({ ...p, old_password: e.target.value }))}
@@ -451,12 +453,12 @@ const ProfilePage = () => {
                     </div>
 
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>New Password</label>
+                      <label style={s.fieldLabel}>{t('profile.newPassword')}</label>
                       <div className="pw-input-wrap">
                         <input
                           className="profile-input"
                           type={showNew ? 'text' : 'password'}
-                          placeholder="At least 8 characters"
+                          placeholder={t('profile.newPasswordPlaceholder')}
                           style={{ paddingRight: '42px' }}
                           value={pwForm.new_password}
                           onChange={e => setPwForm(p => ({ ...p, new_password: e.target.value }))}
@@ -468,12 +470,12 @@ const ProfilePage = () => {
                     </div>
 
                     <div style={s.fieldGroup}>
-                      <label style={s.fieldLabel}>Confirm New Password</label>
+                      <label style={s.fieldLabel}>{t('profile.confirmPassword')}</label>
                       <div className="pw-input-wrap">
                         <input
                           className="profile-input"
                           type={showConfirm ? 'text' : 'password'}
-                          placeholder="Repeat new password"
+                          placeholder={t('profile.confirmPasswordPlaceholder')}
                           style={{ paddingRight: '42px' }}
                           value={pwForm.confirm}
                           onChange={e => setPwForm(p => ({ ...p, confirm: e.target.value }))}
@@ -487,17 +489,17 @@ const ProfilePage = () => {
 
                   <div style={{ marginTop: '8px' }}>
                     <button className="save-btn" onClick={handlePwChange} disabled={pwLoading}>
-                      {pwLoading ? 'Changing...' : 'Change Password'}
+                      {pwLoading ? t('profile.changing') : t('profile.changePasswordBtn')}
                     </button>
                   </div>
 
                   <div style={s.securityDivider} />
 
                   <div style={s.dangerZone}>
-                    <p style={s.dangerTitle}>Danger Zone</p>
-                    <p style={s.dangerDesc}>Once you log out, you'll need to sign in again.</p>
+                    <p style={s.dangerTitle}>{t('profile.dangerZone')}</p>
+                    <p style={s.dangerDesc}>{t('profile.dangerDesc')}</p>
                     <button className="danger-btn" style={{ marginTop: '12px' }} onClick={handleLogout}>
-                      Sign Out
+                      {t('profile.signOut')}
                     </button>
                   </div>
                 </div>

@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
@@ -8,6 +9,7 @@ const AdminNewsForm = () => {
   const { id } = useParams()
   const isEdit = Boolean(id)
   const { user } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const fileInputRef = useRef(null)
 
@@ -32,7 +34,7 @@ const AdminNewsForm = () => {
         setForm({ title: n.title || '', content: n.content || '', is_published: n.is_published ?? true })
         if (n.image) setExistingImage(n.image)
       })
-      .catch(() => setError('Failed to load article'))
+      .catch(() => setError(t('news.loadError')))
       .finally(() => setFetching(false))
   }, [id])
 
@@ -66,12 +68,12 @@ const AdminNewsForm = () => {
         await api.patch(`/news/${id}/update_news/`, formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
-        setSuccess('Article updated!')
+        setSuccess(t('news.updateSuccess'))
       } else {
         await api.post('/news/create_news/', formData, {
           headers: { 'Content-Type': 'multipart/form-data' }
         })
-        setSuccess('Article created!')
+        setSuccess(t('news.createSuccess'))
         setTimeout(() => navigate('/admin/news'), 1000)
       }
     } catch (err) {
@@ -80,7 +82,7 @@ const AdminNewsForm = () => {
         const first = Object.values(data)[0]
         setError(Array.isArray(first) ? first[0] : String(first))
       } else {
-        setError('Something went wrong')
+        setError(t('common.error'))
       }
     }
     setLoading(false)
@@ -195,8 +197,8 @@ const AdminNewsForm = () => {
 
       <div style={s.wrap}>
         <div style={s.topBar}>
-          <button className="back-btn" onClick={() => navigate('/admin/news')}>← Back</button>
-          <h1 style={s.title}>{isEdit ? 'Edit Article' : 'New Article'}</h1>
+          <button className="back-btn" onClick={() => navigate('/admin/news')}>← {t('common.back')}</button>
+          <h1 style={s.title}>{isEdit ? t('news.editArticle') : t('news.newArticle')}</h1>
         </div>
 
         {error && <div style={s.errorBox}>{error}</div>}
@@ -204,14 +206,14 @@ const AdminNewsForm = () => {
 
         <form onSubmit={handleSubmit}>
           <div style={s.card}>
-            <p style={s.cardTitle}>Article Info</p>
+            <p style={s.cardTitle}>{t('news.articleInfo')}</p>
 
             <div style={s.field}>
-              <label style={s.label}>Title</label>
+              <label style={s.label}>{t('news.titleLabel')}</label>
               <input
                 className="form-input"
                 name="title"
-                placeholder="Article title..."
+                placeholder={t('news.titlePlaceholder')}
                 value={form.title}
                 onChange={handleChange}
                 required
@@ -219,11 +221,11 @@ const AdminNewsForm = () => {
             </div>
 
             <div style={s.field}>
-              <label style={s.label}>Content</label>
+              <label style={s.label}>{t('news.contentLabel')}</label>
               <textarea
                 className="form-textarea"
                 name="content"
-                placeholder="Write your article content here..."
+                placeholder={t('news.contentPlaceholder')}
                 value={form.content}
                 onChange={handleChange}
                 required
@@ -231,20 +233,16 @@ const AdminNewsForm = () => {
             </div>
 
             <div style={s.field}>
-              <label style={s.label}>Cover Image</label>
+              <label style={s.label}>{t('news.coverImage')}</label>
               {imagePreview || existingImage ? (
                 <div style={s.imgPreviewWrap}>
-                  <img
-                    src={imagePreview || existingImage}
-                    alt="preview"
-                    style={s.imgPreview}
-                  />
+                  <img src={imagePreview || existingImage} alt="preview" style={s.imgPreview} />
                   <button
                     type="button"
                     style={s.removeImgBtn}
                     onClick={() => { setImageFile(null); setImagePreview(null); setExistingImage(null) }}
                   >
-                    Remove image
+                    {t('news.removeImage')}
                   </button>
                 </div>
               ) : (
@@ -254,7 +252,7 @@ const AdminNewsForm = () => {
                     <circle cx="9" cy="12" r="2.5"/>
                     <path d="M1 20l7-7 4 4 4-4 7 7"/>
                   </svg>
-                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>Click to upload image</span>
+                  <span style={{ color: 'var(--text-secondary)', fontSize: '13px', fontWeight: '500' }}>{t('news.uploadClick')}</span>
                   <span style={{ color: 'var(--text-muted)', fontSize: '11px' }}>JPG, PNG, WebP</span>
                 </div>
               )}
@@ -282,17 +280,17 @@ const AdminNewsForm = () => {
                 }} />
               </div>
               <span style={s.checkLabel}>
-                {form.is_published ? 'Published — visible to everyone' : 'Draft — only you can see it'}
+                {form.is_published ? t('news.published') : t('news.draft')}
               </span>
             </div>
           </div>
 
           <div style={s.formActions}>
             <button type="button" className="cancel-btn" onClick={() => navigate('/admin/news')}>
-              Cancel
+              {t('common.cancel')}
             </button>
             <button type="submit" className="submit-btn" disabled={loading}>
-              {loading ? 'Saving...' : isEdit ? 'Save Changes' : 'Publish Article'}
+              {loading ? t('common.saving') : isEdit ? t('news.saveChanges') : t('news.publishArticle')}
             </button>
           </div>
         </form>

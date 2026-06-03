@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const AdminProductPage = () => {
+  const { t } = useTranslation()
   const { user } = useAuth()
   const navigate = useNavigate()
   const [products, setProducts] = useState([])
@@ -36,7 +38,7 @@ const AdminProductPage = () => {
           setTotalPages(Math.ceil(res.data.count / 30))
         }
       })
-      .catch(() => setError('Failed to load products'))
+      .catch(() => setError(t('admin.loadError')))
       .finally(() => setLoading(false))
   }
 
@@ -48,14 +50,14 @@ const AdminProductPage = () => {
 
   const handleDelete = async (id, e) => {
     e.stopPropagation()
-    if (!window.confirm('Delete this product?')) return
+    if (!window.confirm(t('admin.deleteConfirm'))) return
     setDeleting(id)
     try {
       await api.delete(`/products/${id}/`)
       setProducts(prev => prev.filter(p => p.id !== id))
       setTotalCount(prev => prev - 1)
     } catch {
-      setError('Failed to delete product')
+      setError(t('admin.deleteError'))
     }
     setDeleting(null)
   }
@@ -163,8 +165,8 @@ const AdminProductPage = () => {
       <div style={s.page}>
         <div style={s.topBar}>
           <div>
-            <h1 style={s.title}>All Products</h1>
-            {!loading && <p style={s.sub}>{totalCount} products total</p>}
+            <h1 style={s.title}>{t('admin.allProducts')}</h1>
+            {!loading && <p style={s.sub}>{totalCount} {t('admin.productsTotal')}</p>}
           </div>
           <form onSubmit={handleSearch} style={s.searchWrap}>
             <div style={s.searchBox}>
@@ -174,14 +176,14 @@ const AdminProductPage = () => {
               </svg>
               <input
                 className="search-input"
-                placeholder="Search products..."
+                placeholder={t('admin.searchPlaceholder')}
                 value={searchInput}
                 onChange={e => setSearchInput(e.target.value)}
               />
               {searchInput && (
                 <button type="button" style={s.clearBtn} onClick={() => { setSearchInput(''); setSearch(''); setPage(1) }}>×</button>
               )}
-              <button type="submit" className="search-btn">Search</button>
+              <button type="submit" className="search-btn">{t('common.search')}</button>
             </div>
           </form>
         </div>
@@ -200,18 +202,18 @@ const AdminProductPage = () => {
               <rect x="4" y="8" width="40" height="28" rx="4"/>
               <path d="M16 40h16M24 36v4"/>
             </svg>
-            <p style={s.emptyTitle}>No products found</p>
+            <p style={s.emptyTitle}>{t('admin.noProducts')}</p>
           </div>
         ) : (
           <div style={s.tableWrap}>
             <div style={s.tableHead}>
               <span></span>
-              <span>Product</span>
-              <span>Type</span>
-              <span>Price</span>
-              <span>Stock</span>
-              <span>Status</span>
-              <span>Action</span>
+              <span>{t('admin.colProduct')}</span>
+              <span>{t('admin.colType')}</span>
+              <span>{t('admin.colPrice')}</span>
+              <span>{t('admin.colStock')}</span>
+              <span>{t('admin.colStatus')}</span>
+              <span>{t('common.actions')}</span>
             </div>
             {products.map((p, i) => (
               <div
@@ -237,7 +239,7 @@ const AdminProductPage = () => {
                 <span style={s.stockText}>{p.stock}</span>
                 <span>
                   <span style={p.is_available ? s.activeBadge : s.hiddenBadge}>
-                    {p.is_available ? 'Active' : 'Hidden'}
+                    {p.is_available ? t('seller.active') : t('seller.hidden')}
                   </span>
                 </span>
                 <div onClick={e => e.stopPropagation()}>
@@ -246,7 +248,7 @@ const AdminProductPage = () => {
                     onClick={(e) => handleDelete(p.id, e)}
                     disabled={deleting === p.id}
                   >
-                    {deleting === p.id ? '...' : 'Delete'}
+                    {deleting === p.id ? '...' : t('common.delete')}
                   </button>
                 </div>
               </div>
@@ -256,7 +258,9 @@ const AdminProductPage = () => {
 
         {totalPages > 1 && !loading && (
           <div style={s.pagination}>
-            <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>← Prev</button>
+            <button className="page-btn" disabled={page === 1} onClick={() => setPage(p => p - 1)}>
+              {t('admin.prevPage')}
+            </button>
             <div style={s.pageNums}>
               {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
                 let num
@@ -271,7 +275,9 @@ const AdminProductPage = () => {
                 )
               })}
             </div>
-            <button className="page-btn" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>Next →</button>
+            <button className="page-btn" disabled={page === totalPages} onClick={() => setPage(p => p + 1)}>
+              {t('admin.nextPage')}
+            </button>
           </div>
         )}
       </div>

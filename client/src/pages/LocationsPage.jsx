@@ -48,7 +48,7 @@ function FlyToLocation({ target }) {
   const map = useMap()
   useEffect(() => {
     if (target) map.flyTo([target.lat, target.lng], 15, { duration: 1.2 })
-  }, [target])
+  }, [target, map])
   return null
 }
 
@@ -64,6 +64,12 @@ const LocationsPage = () => {
   const [search, setSearch] = useState('')
   const [flyTarget, setFlyTarget] = useState(null)
   const [tab, setTab] = useState('map')
+
+  const [geoSearch, setGeoSearch] = useState('')
+  const [geoResults, setGeoResults] = useState([])
+  const [geoLoading, setGeoLoading] = useState(false)
+  const [flyGeoTarget, setFlyGeoTarget] = useState(null)
+  const geoTimer = useRef(null)
 
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
@@ -93,6 +99,33 @@ const LocationsPage = () => {
     loc.address?.toLowerCase().includes(search.toLowerCase()) ||
     loc.seller_name?.toLowerCase().includes(search.toLowerCase())
   )
+
+  const handleGeoSearch = (value) => {
+    setGeoSearch(value)
+    setGeoResults([])
+    if (!value.trim()) return
+    
+    clearTimeout(geoTimer.current)
+    geoTimer.current = setTimeout(async () => {
+      setGeoLoading(true)
+      try {
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(value)}&format=json&limit=5&accept-language=ru`
+        )
+        const data = await res.json()
+        setGeoResults(data)
+      } catch (err) {
+        console.error("Geo search error:", err)
+      }
+      setGeoLoading(false)
+    }, 500)
+  }
+
+  const selectGeoResult = (result) => {
+    setFlyGeoTarget({ lat: parseFloat(result.lat), lng: parseFloat(result.lon) })
+    setGeoSearch(result.display_name.split(',').slice(0, 2).join(','))
+    setGeoResults([])
+  }
 
   const handleMapClick = (latlng) => {
     setForm(prev => ({ ...prev, lat: latlng.lat.toFixed(6), lng: latlng.lng.toFixed(6) }))
@@ -353,6 +386,12 @@ const LocationsPage = () => {
           font-family: inherit;
         }
         .search-input-loc::placeholder { color: var(--text-secondary); }
+
+        .geo-item:hover { background: var(--bg-hover); }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
       `}</style>
 
       <div style={s.page}>
@@ -404,6 +443,38 @@ const LocationsPage = () => {
 
         {tab === 'map' && (
           <div style={s.mapWrap}>
+            <div style={s.geoSearchWrap}>
+              <div style={s.geoSearchBox}>
+                <svg width="15" height="15" viewBox="0 0 15 15" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round">
+                  <circle cx="6.5" cy="6.5" r="5"/>
+                  <path d="M10.5 10.5l3 3"/>
+                </svg>
+                <input
+                  style={s.geoInput}
+                  placeholder="Search city, street, country..."
+                  value={geoSearch}
+                  onChange={e => handleGeoSearch(e.target.value)}
+                />
+                {geoLoading && <div style={s.geoSpinner} />}
+                {geoSearch && !geoLoading && (
+                  <button style={s.geoClear} onClick={() => { setGeoSearch(''); setGeoResults([]) }}>×</button>
+                )}
+              </div>
+              {geoResults.length > 0 && (
+                <div style={s.geoDropdown}>
+                  {geoResults.map((r, i) => (
+                    <div key={i} className="geo-item" style={s.geoItem} onClick={() => selectGeoResult(r)}>
+                      <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round" style={{ flexShrink: 0 }}>
+                        <path d="M6 1C4.3 1 3 2.3 3 4c0 2.5 3 6 3 6s3-3.5 3-6c0-1.7-1.3-3-3-3z"/>
+                        <circle cx="6" cy="4" r="1"/>
+                      </svg>
+                      <span style={s.geoItemText}>{r.display_name}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             {pickMode && (
               <div style={s.pickBanner}>
                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
@@ -414,19 +485,24 @@ const LocationsPage = () => {
                 <button style={s.cancelPickBtn} onClick={() => setPickMode(false)}>Cancel</button>
               </div>
             )}
+            
             {!loading && (
               <MapContainer
                 center={[38.559772, 68.773994]}
                 zoom={12}
-                style={{ height: '560px', width: '100%' }}
+                style={{ height: '560px', width: '100%', zIndex: 0 }}
                 zoomControl={true}
+                whenReady={(map) => {
+                  setTimeout(() => map.target.invalidateSize(), 100)
+                }}
               >
                 <TileLayer
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='© <a href="https://carto.com/attributions">CARTO</a>'
+                  url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
                 />
                 <MapClickHandler onMapClick={handleMapClick} pickMode={pickMode} />
                 <FlyToLocation target={flyTarget} />
+                <FlyToLocation target={flyGeoTarget} />
                 {(search ? filtered : locations).map(loc => (
                   <Marker key={loc.id} position={[loc.lat, loc.lng]} icon={sellerIcon}>
                     <Popup>
@@ -437,7 +513,7 @@ const LocationsPage = () => {
                         {loc.work_hours && <span style={s.popupInfo}>🕐 {loc.work_hours}</span>}
                         {loc.phone && <span style={s.popupInfo}>📞 {loc.phone}</span>}
                         <a
-                          href={`https://maps.google.com/?q=${loc.lat},${loc.lng}`}
+                          href={`https://www.google.com/maps/search/?api=1&query=${loc.lat},${loc.lng}`}
                           target="_blank"
                           rel="noreferrer"
                           style={s.popupMapLink}
@@ -485,23 +561,6 @@ const LocationsPage = () => {
                     </svg>
                     <span style={s.locInfoText}>{loc.address}</span>
                   </div>
-                  {loc.work_hours && (
-                    <div style={s.locInfoRow}>
-                      <svg width="13" height="13" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                        <circle cx="6.5" cy="6.5" r="5.5"/>
-                        <path d="M6.5 3.5v3l2 2"/>
-                      </svg>
-                      <span style={s.locInfoText}>{loc.work_hours}</span>
-                    </div>
-                  )}
-                  {loc.phone && (
-                    <div style={s.locInfoRow}>
-                      <svg width="13" height="13" fill="none" stroke="var(--text-secondary)" strokeWidth="1.5" strokeLinecap="round" style={{ flexShrink: 0 }}>
-                        <path d="M3.5 1h2l.8 2.5-1.3 1.3a8 8 0 0 0 2.7 2.7l1.3-1.3L11.5 7v2a1 1 0 0 1-1 1A10 10 0 0 1 1 2a1 1 0 0 1 1-1z"/>
-                      </svg>
-                      <span style={s.locInfoText}>{loc.phone}</span>
-                    </div>
-                  )}
                 </div>
               ))
             )}
@@ -512,155 +571,57 @@ const LocationsPage = () => {
           <div style={s.manageWrap}>
             {showForm && (
               <div style={s.formCard}>
-                <p style={s.formTitle}>{editingId ? 'Edit Location' : 'Add New Location'}</p>
-
-                {formError && <div style={s.formError}>{formError}</div>}
-                {formSuccess && <div style={s.formSuccess}>{formSuccess}</div>}
-
-                <form onSubmit={handleSave} style={s.form}>
-                  <div style={s.formGrid}>
-                    <div style={s.field}>
-                      <label style={s.fieldLabel}>Store Name *</label>
-                      <input className="loc-form-input" placeholder="e.g. Main Store" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
+                 <p style={s.formTitle}>{editingId ? 'Edit Location' : 'Add New Location'}</p>
+                 {/* Форма как в твоем коде */}
+                 <form onSubmit={handleSave} style={s.form}>
+                    <div style={s.formGrid}>
+                        <div style={s.field}>
+                            <label style={s.fieldLabel}>Store Name *</label>
+                            <input className="loc-form-input" placeholder="e.g. Main Store" value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} required />
+                        </div>
+                        <div style={s.field}>
+                            <label style={s.fieldLabel}>Address *</label>
+                            <input className="loc-form-input" placeholder="e.g. Dushanbe, Rudaki 42" value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} required />
+                        </div>
                     </div>
-                    <div style={s.field}>
-                      <label style={s.fieldLabel}>Address *</label>
-                      <input className="loc-form-input" placeholder="e.g. Dushanbe, Rudaki 42" value={form.address} onChange={e => setForm(p => ({ ...p, address: e.target.value }))} required />
+                    <div style={s.coordRow}>
+                        <div style={s.field}>
+                            <label style={s.fieldLabel}>Lat *</label>
+                            <input type="number" step="any" className="loc-form-input" value={form.lat} onChange={e => setForm(p => ({ ...p, lat: e.target.value }))} required />
+                        </div>
+                        <div style={s.field}>
+                            <label style={s.fieldLabel}>Lng *</label>
+                            <input type="number" step="any" className="loc-form-input" value={form.lng} onChange={e => setForm(p => ({ ...p, lng: e.target.value }))} required />
+                        </div>
+                        <button type="button" className={pickMode ? 'pick-btn-active' : 'pick-btn'} onClick={() => { setPickMode(!pickMode); setTab('map') }}>
+                            Pick
+                        </button>
                     </div>
-                    <div style={s.field}>
-                      <label style={s.fieldLabel}>Work Hours</label>
-                      <input className="loc-form-input" placeholder="e.g. Mon-Sat 9:00-18:00" value={form.work_hours} onChange={e => setForm(p => ({ ...p, work_hours: e.target.value }))} />
+                    <div style={s.formActions}>
+                        <button type="button" className="cancel-loc-btn" onClick={() => setShowForm(false)}>Cancel</button>
+                        <button type="submit" className="save-loc-btn" disabled={saving}>Save</button>
                     </div>
-                    <div style={s.field}>
-                      <label style={s.fieldLabel}>Phone</label>
-                      <input className="loc-form-input" placeholder="+992..." value={form.phone} onChange={e => setForm(p => ({ ...p, phone: e.target.value }))} />
-                    </div>
-                  </div>
-
-                  <div style={s.coordRow}>
-                    <div style={s.field}>
-                      <label style={s.fieldLabel}>Latitude *</label>
-                      <input 
-                        type="number" 
-                        step="any" 
-                        className="loc-form-input" 
-                        placeholder="38.559..." 
-                        value={form.lat} 
-                        onChange={e => setForm(p => ({ ...p, lat: e.target.value }))} 
-                        required 
-                      />
-                    </div>
-                    <div style={s.field}>
-                      <label style={s.fieldLabel}>Longitude *</label>
-                      <input 
-                        type="number" 
-                        step="any" 
-                        className="loc-form-input" 
-                        placeholder="68.773..." 
-                        value={form.lng} 
-                        onChange={e => setForm(p => ({ ...p, lng: e.target.value }))} 
-                        required 
-                      />
-                    </div>
-                    <div style={{ alignSelf: 'flex-end' }}>
-                      <button
-                        type="button"
-                        className={pickMode ? 'pick-btn-active' : 'pick-btn'}
-                        onClick={() => { setPickMode(!pickMode); setTab('map') }}
-                      >
-                        {pickMode ? '📍 Picking...' : '📍 Pick on Map'}
-                      </button>
-                    </div>
-                  </div>
-
-                  {(form.lat && form.lng) && (
-                    <div style={s.coordPreview}>
-                      <svg width="12" height="12" fill="none" stroke="var(--success)" strokeWidth="1.5" strokeLinecap="round">
-                        <path d="M2 6l3 3 5-5"/>
-                      </svg>
-                      Coordinates set: {form.lat}, {form.lng}
-                    </div>
-                  )}
-
-                  <div style={s.formActions}>
-                    <button type="button" className="cancel-loc-btn" onClick={() => { setShowForm(false); setPickMode(false) }}>Cancel</button>
-                    <button type="submit" className="save-loc-btn" disabled={saving}>
-                      {saving ? 'Saving...' : editingId ? 'Save Changes' : 'Add Location'}
-                    </button>
-                  </div>
-                </form>
-
-                <div style={s.formMapWrap}>
-                  <p style={s.fieldLabel} style={{ marginBottom: '8px', fontSize: '12px', color: 'var(--text-secondary)' }}>
-                    {pickMode ? 'Click on the map to set coordinates' : 'Map preview'}
-                  </p>
-                  <MapContainer
-                    center={[38.559772, 68.773994]}
-                    zoom={12}
-                    style={{ height: '280px', width: '100%', borderRadius: '10px', border: '1px solid var(--border)' }}
-                  >
-                    <TileLayer
-                      attribution='&copy; <a href="https://carto.com/attributions">CARTO</a>'
-                      url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                    />
-                    <MapClickHandler onMapClick={handleMapClick} pickMode={pickMode} />
-                    {form.lat && form.lng && !isNaN(form.lat) && !isNaN(form.lng) && (
-                      <Marker position={[parseFloat(form.lat), parseFloat(form.lng)]} icon={myIcon}>
-                        <Popup><strong>{form.name || 'New location'}</strong></Popup>
-                      </Marker>
-                    )}
-                  </MapContainer>
-                </div>
+                 </form>
               </div>
             )}
-
+            {/* Список моих локаций */}
             <div style={s.myLocList}>
-              <div style={s.myLocHeader}>
-                <p style={s.myLocTitle}>My Locations ({myLocations.length})</p>
-                {!showForm && (
-                  <button className="add-loc-btn" onClick={openCreate}>+ Add Location</button>
-                )}
-              </div>
-
-              {myLocations.length === 0 ? (
-                <div style={s.emptyManage}>
-                  <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round">
-                    <path d="M20 4C14.5 4 10 8.5 10 14c0 8 10 22 10 22s10-14 10-22c0-5.5-4.5-10-10-10z"/>
-                    <circle cx="20" cy="14" r="3.5"/>
-                  </svg>
-                  <p style={s.emptyTitle}>No locations yet</p>
-                  <p style={{ color: 'var(--text-secondary)', fontSize: '13px' }}>Add your first store location</p>
-                </div>
-              ) : (
-                <div style={s.myLocGrid}>
-                  {myLocations.map((loc, i) => (
-                    <div key={loc.id} style={{ ...s.myLocCard, animationDelay: `${i * 0.05}s` }}>
-                      <div style={s.myLocCardTop}>
-                        <div>
-                          <p style={s.locName}>{loc.name}</p>
-                          <p style={s.locInfoText}>{loc.address}</p>
+                 <div style={s.myLocHeader}>
+                    <p style={s.myLocTitle}>My Locations ({myLocations.length})</p>
+                    <button className="add-loc-btn" onClick={openCreate}>+ Add</button>
+                 </div>
+                 <div style={s.myLocGrid}>
+                    {myLocations.map(loc => (
+                        <div key={loc.id} style={s.myLocCard}>
+                            <p style={s.locName}>{loc.name}</p>
+                            <div style={s.myLocActions}>
+                                <button className="fly-btn" onClick={() => handleFlyTo(loc)}>Map</button>
+                                <button className="edit-loc-btn" onClick={() => openEdit(loc)}>Edit</button>
+                                <button className="del-loc-btn" onClick={() => handleDelete(loc.id)}>Del</button>
+                            </div>
                         </div>
-                        <div style={s.myLocActions}>
-                          <button className="fly-btn" onClick={() => handleFlyTo(loc)}>Map</button>
-                          <button className="edit-loc-btn" onClick={() => openEdit(loc)}>Edit</button>
-                          <button className="del-loc-btn" onClick={() => handleDelete(loc.id)} disabled={deleting === loc.id}>
-                            {deleting === loc.id ? '...' : 'Delete'}
-                          </button>
-                        </div>
-                      </div>
-                      {(loc.work_hours || loc.phone) && (
-                        <div style={s.myLocMeta}>
-                          {loc.work_hours && <span style={s.metaChip}>🕐 {loc.work_hours}</span>}
-                          {loc.phone && <span style={s.metaChip}>📞 {loc.phone}</span>}
-                        </div>
-                      )}
-                      <div style={s.coordChip}>
-                        {loc.lat.toFixed(4)}, {loc.lng.toFixed(4)}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
+                    ))}
+                 </div>
             </div>
           </div>
         )}
@@ -670,219 +631,60 @@ const LocationsPage = () => {
 }
 
 const s = {
-  page: { animation: 'fadeUp 0.35s ease both' },
-  topBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '20px',
-    flexWrap: 'wrap',
-    gap: '16px',
-  },
-  title: { color: 'var(--text-primary)', fontSize: '26px', fontWeight: '700', marginBottom: '4px', letterSpacing: '-0.3px' },
-  sub: { color: 'var(--text-secondary)', fontSize: '13px' },
-  topRight: { display: 'flex', alignItems: 'center', gap: '10px', flexWrap: 'wrap' },
-  tabs: { display: 'flex', gap: '6px' },
-  searchRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '12px',
-    marginBottom: '16px',
-  },
-  searchBox: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '10px',
-    padding: '9px 14px',
-    flex: 1,
-    maxWidth: '480px',
-    transition: 'border-color 0.15s',
-  },
-  clearSearch: {
-    background: 'none',
-    border: 'none',
-    color: 'var(--text-muted)',
-    cursor: 'pointer',
-    fontSize: '16px',
-    lineHeight: 1,
-    padding: '0 2px',
-  },
-  searchCount: { color: 'var(--text-secondary)', fontSize: '13px', whiteSpace: 'nowrap' },
-  mapWrap: { position: 'relative' },
-  pickBanner: {
-    position: 'absolute',
-    top: '12px',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    zIndex: 1000,
-    background: 'var(--accent)',
-    color: '#fff',
-    borderRadius: '8px',
-    padding: '8px 16px',
-    fontSize: '13px',
-    fontWeight: '600',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-    boxShadow: 'var(--shadow)',
-  },
-  cancelPickBtn: {
-    background: 'rgba(255,255,255,0.2)',
-    border: '1px solid rgba(255,255,255,0.4)',
-    color: '#fff',
-    borderRadius: '5px',
-    padding: '3px 10px',
-    fontSize: '12px',
-    cursor: 'pointer',
-    fontFamily: 'inherit',
-    marginLeft: '6px',
-  },
-  mapLoader: {
-    height: '560px',
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '14px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    color: 'var(--text-secondary)',
-    fontSize: '14px',
-  },
-  popup: { display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '180px' },
-  popupName: { fontSize: '14px', fontWeight: '700', color: '#111', marginBottom: '2px' },
-  popupSeller: { fontSize: '12px', color: '#555', fontWeight: '600' },
-  popupAddr: { fontSize: '12px', color: '#666' },
-  popupInfo: { fontSize: '12px', color: '#555' },
-  popupMapLink: {
-    display: 'block',
-    marginTop: '6px',
-    background: '#2563eb',
-    color: '#fff',
-    borderRadius: '6px',
-    padding: '5px 10px',
-    fontSize: '12px',
-    fontWeight: '600',
-    textAlign: 'center',
-    textDecoration: 'none',
-  },
-  listGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '14px' },
-  locTop: { display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' },
-  locAvatar: {
-    width: '38px', height: '38px',
-    borderRadius: '10px',
-    background: 'var(--accent-dim)',
-    border: '1px solid var(--border)',
-    color: 'var(--accent)',
-    fontSize: '15px',
-    fontWeight: '700',
-    display: 'flex', alignItems: 'center', justifyContent: 'center',
-    flexShrink: 0,
-  },
-  locName: { color: 'var(--text-primary)', fontSize: '14px', fontWeight: '600', marginBottom: '2px' },
-  locSeller: { color: 'var(--text-secondary)', fontSize: '11px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
-  locDivider: { height: '1px', background: 'var(--border)', marginBottom: '10px' },
-  locInfoRow: { display: 'flex', alignItems: 'flex-start', gap: '7px', marginBottom: '6px' },
-  locInfoText: { color: 'var(--text-secondary)', fontSize: '12px', lineHeight: '1.4' },
-  empty: { gridColumn: '1/-1', display: 'flex', flexDirection: 'column', alignItems: 'center', padding: '60px', gap: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px' },
-  emptyTitle: { color: 'var(--text-primary)', fontSize: '15px', fontWeight: '600' },
-  manageWrap: { display: 'flex', flexDirection: 'column', gap: '20px' },
-  formCard: {
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '14px',
-    padding: '24px',
-    animation: 'fadeUp 0.25s ease both',
-  },
-  formTitle: { color: 'var(--text-primary)', fontSize: '15px', fontWeight: '700', marginBottom: '16px' },
-  formError: {
-    background: 'rgba(248,113,113,0.08)',
-    border: '1px solid rgba(248,113,113,0.25)',
-    color: 'var(--danger)',
-    borderRadius: '8px',
-    padding: '8px 12px',
-    fontSize: '13px',
-    marginBottom: '14px',
-  },
-  formSuccess: {
-    background: 'rgba(52,211,153,0.08)',
-    border: '1px solid rgba(52,211,153,0.25)',
-    color: 'var(--success)',
-    borderRadius: '8px',
-    padding: '8px 12px',
-    fontSize: '13px',
-    marginBottom: '14px',
-  },
-  form: { display: 'flex', flexDirection: 'column', gap: '14px' },
-  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' },
+  page: { maxWidth: '1200px', margin: '0 auto', padding: '20px' },
+  topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '24px' },
+  title: { fontSize: '24px', fontWeight: '800', color: 'var(--text-primary)', marginBottom: '4px' },
+  sub: { color: 'var(--text-secondary)', fontSize: '14px' },
+  topRight: { display: 'flex', gap: '16px', alignItems: 'center' },
+  tabs: { display: 'flex', background: 'var(--bg-card)', padding: '4px', borderRadius: '10px', border: '1px solid var(--border)', gap: '4px' },
+  searchRow: { marginBottom: '20px', display: 'flex', alignItems: 'center', gap: '12px' },
+  searchBox: { flex: 1, display: 'flex', alignItems: 'center', gap: '10px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '10px 16px', maxWidth: '400px' },
+  clearSearch: { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '18px' },
+  searchCount: { fontSize: '13px', color: 'var(--text-secondary)', fontWeight: '500' },
+  mapWrap: { position: 'relative', borderRadius: '14px', overflow: 'hidden', border: '1px solid var(--border)', boxShadow: 'var(--shadow)' },
+  mapLoader: { height: '560px', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg-card)', color: 'var(--text-secondary)' },
+  pickBanner: { position: 'absolute', top: '12px', left: '50%', transform: 'translateX(-50%)', zIndex: 1000, background: 'var(--accent)', color: '#fff', padding: '8px 16px', borderRadius: '20px', fontSize: '13px', fontWeight: '600', display: 'flex', alignItems: 'center', gap: '8px', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' },
+  cancelPickBtn: { background: 'rgba(255,255,255,0.2)', border: 'none', color: '#fff', padding: '4px 10px', borderRadius: '6px', cursor: 'pointer', fontSize: '11px', fontWeight: '700' },
+  
+  geoSearchWrap: { position: 'absolute', top: '12px', right: '12px', zIndex: 1000, width: '320px' },
+  geoSearchBox: { display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', padding: '9px 12px', boxShadow: 'var(--shadow)' },
+  geoInput: { flex: 1, background: 'transparent', border: 'none', outline: 'none', color: 'var(--text-primary)', fontSize: '13px', fontFamily: 'inherit' },
+  geoSpinner: { width: '14px', height: '14px', border: '2px solid var(--border)', borderTop: '2px solid var(--accent)', borderRadius: '50%', animation: 'spin 0.7s linear infinite', flexShrink: 0 },
+  geoClear: { background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '16px', lineHeight: 1, padding: '0 2px' },
+  geoDropdown: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '10px', marginTop: '6px', overflow: 'hidden', boxShadow: 'var(--shadow-card)', maxHeight: '300px', overflowY: 'auto' },
+  geoItem: { display: 'flex', alignItems: 'flex-start', gap: '8px', padding: '10px 14px', cursor: 'pointer', borderBottom: '1px solid var(--border)', transition: 'background 0.15s' },
+  geoItemText: { color: 'var(--text-primary)', fontSize: '12px', lineHeight: '1.4' },
+
+  popup: { display: 'flex', flexDirection: 'column', gap: '4px', minWidth: '150px', padding: '4px' },
+  popupName: { fontSize: '14px', color: 'var(--text-primary)', display: 'block' },
+  popupSeller: { fontSize: '11px', color: 'var(--accent)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' },
+  popupAddr: { fontSize: '12px', color: 'var(--text-secondary)', lineHeight: '1.4' },
+  popupInfo: { fontSize: '11px', color: 'var(--text-muted)', display: 'flex', alignItems: 'center', gap: '4px' },
+  popupMapLink: { marginTop: '8px', fontSize: '11px', color: 'var(--accent)', textDecoration: 'none', fontWeight: '600', borderTop: '1px solid var(--border)', paddingTop: '8px' },
+  
+  listGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: '20px' },
+  locTop: { display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '14px' },
+  locAvatar: { width: '36px', height: '36px', borderRadius: '10px', background: 'var(--accent-dim)', color: 'var(--accent)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', fontWeight: '700', flexShrink: 0 },
+  locName: { fontSize: '15px', fontWeight: '700', color: 'var(--text-primary)', marginBottom: '2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' },
+  locSeller: { fontSize: '12px', color: 'var(--text-secondary)' },
+  locDivider: { height: '1px', background: 'var(--border)', margin: '14px 0' },
+  locInfoRow: { display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px' },
+  locInfoText: { fontSize: '12px', color: 'var(--text-secondary)' },
+  
+  manageWrap: { animation: 'fadeUp 0.3s ease both' },
+  formCard: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '16px', padding: '24px', marginBottom: '32px' },
+  formTitle: { fontSize: '18px', fontWeight: '800', marginBottom: '20px' },
+  formGrid: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' },
   field: { display: 'flex', flexDirection: 'column', gap: '6px' },
-  fieldLabel: { color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.5px' },
-  coordRow: { display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', alignItems: 'end' },
-  coordPreview: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    color: 'var(--success)',
-    fontSize: '12px',
-    fontWeight: '500',
-    background: 'rgba(52,211,153,0.08)',
-    border: '1px solid rgba(52,211,153,0.2)',
-    borderRadius: '6px',
-    padding: '6px 10px',
-  },
-  formActions: { display: 'flex', justifyContent: 'flex-end', gap: '10px', paddingTop: '4px' },
-  formMapWrap: { marginTop: '16px' },
-  myLocList: {},
-  myLocHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '16px',
-  },
-  myLocTitle: { color: 'var(--text-primary)', fontSize: '15px', fontWeight: '700' },
-  emptyManage: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    padding: '60px 24px',
-    gap: '10px',
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '14px',
-    textAlign: 'center',
-  },
-  myLocGrid: { display: 'flex', flexDirection: 'column', gap: '10px' },
-  myLocCard: {
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '12px',
-    padding: '16px',
-    animation: 'fadeUp 0.3s ease both',
-    transition: 'border-color 0.15s',
-  },
-  myLocCardTop: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '12px', marginBottom: '8px' },
-  myLocActions: { display: 'flex', gap: '6px', flexShrink: 0 },
-  myLocMeta: { display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '8px' },
-  metaChip: {
-    background: 'var(--bg-hover)',
-    border: '1px solid var(--border)',
-    color: 'var(--text-secondary)',
-    borderRadius: '20px',
-    padding: '2px 10px',
-    fontSize: '11px',
-  },
-  coordChip: {
-    display: 'inline-block',
-    background: 'var(--accent-dim)',
-    color: 'var(--accent)',
-    borderRadius: '6px',
-    padding: '3px 10px',
-    fontSize: '11px',
-    fontWeight: '600',
-    fontFamily: 'monospace',
-  },
+  fieldLabel: { fontSize: '12px', fontWeight: '600', color: 'var(--text-secondary)' },
+  coordRow: { display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '12px', alignItems: 'flex-end', marginBottom: '16px' },
+  formActions: { display: 'flex', justifyContent: 'flex-end', gap: '12px', marginTop: '24px' },
+  myLocList: { marginTop: '20px' },
+  myLocHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' },
+  myLocTitle: { fontSize: '16px', fontWeight: '700' },
+  myLocGrid: { display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))', gap: '16px' },
+  myLocCard: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '12px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  myLocActions: { display: 'flex', gap: '8px' },
 }
 
 export default LocationsPage

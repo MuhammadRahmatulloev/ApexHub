@@ -1,49 +1,8 @@
 import { useEffect, useState, useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
-
-const FEATURES = [
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M3 10l4 4 8-8"/>
-        <rect x="1" y="1" width="18" height="18" rx="4"/>
-      </svg>
-    ),
-    title: 'Fast Delivery',
-    desc: '2-3 business days',
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10 18s8-4 8-10V4l-8-3-8 3v4c0 6 8 10 8 10z"/>
-      </svg>
-    ),
-    title: 'Warranty',
-    desc: '1 year on all products',
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="1" y="2" width="18" height="14" rx="2"/>
-        <path d="M7 19h6M10 16v3"/>
-      </svg>
-    ),
-    title: 'AI Assistant',
-    desc: 'Get expert advice',
-  },
-  {
-    icon: (
-      <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-        <rect x="1" y="4" width="18" height="13" rx="2"/>
-        <path d="M1 9h18"/>
-      </svg>
-    ),
-    title: 'Secure Payment',
-    desc: '100% protected',
-  },
-]
 
 const ProductCard = ({ p }) => {
   const [hovered, setHovered] = useState(false)
@@ -158,10 +117,53 @@ const CHIPS = [
 ]
 
 const HomePage = () => {
+  const { t } = useTranslation()
   const [products, setProducts] = useState([])
   const [loading, setLoading] = useState(true)
   const canvasRef = useRef(null)
   const animRef = useRef(null)
+
+  const FEATURES = [
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M3 10l4 4 8-8"/>
+          <rect x="1" y="1" width="18" height="18" rx="4"/>
+        </svg>
+      ),
+      title: t('home.features.delivery'),
+      desc: t('home.features.deliveryDesc'),
+    },
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M10 18s8-4 8-10V4l-8-3-8 3v4c0 6 8 10 8 10z"/>
+        </svg>
+      ),
+      title: t('home.features.warranty'),
+      desc: t('home.features.warrantyDesc'),
+    },
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="2" width="18" height="14" rx="2"/>
+          <path d="M7 19h6M10 16v3"/>
+        </svg>
+      ),
+      title: t('home.features.ai'),
+      desc: t('home.features.aiDesc'),
+    },
+    {
+      icon: (
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="1" y="4" width="18" height="13" rx="2"/>
+          <path d="M1 9h18"/>
+        </svg>
+      ),
+      title: t('home.features.payment'),
+      desc: t('home.features.paymentDesc'),
+    },
+  ]
 
   useEffect(() => {
     api.get('/products/top_rated/')
@@ -264,23 +266,11 @@ const HomePage = () => {
           0%, 100% { opacity: 0.35; }
           50% { opacity: 0.7; }
         }
-
-        .hero-eyebrow {
-          opacity: 0; animation: fadeUp 0.5s 0.05s ease forwards;
-        }
-        .hero-title {
-          opacity: 0; animation: fadeUp 0.5s 0.15s ease forwards;
-        }
-        .hero-sub {
-          opacity: 0; animation: fadeUp 0.5s 0.25s ease forwards;
-        }
-        .hero-btns {
-          opacity: 0; animation: fadeUp 0.5s 0.35s ease forwards;
-        }
-        .hero-stats {
-          opacity: 0; animation: fadeUp 0.5s 0.45s ease forwards;
-        }
-
+        .hero-eyebrow { opacity: 0; animation: fadeUp 0.5s 0.05s ease forwards; }
+        .hero-title { opacity: 0; animation: fadeUp 0.5s 0.15s ease forwards; }
+        .hero-sub { opacity: 0; animation: fadeUp 0.5s 0.25s ease forwards; }
+        .hero-btns { opacity: 0; animation: fadeUp 0.5s 0.35s ease forwards; }
+        .hero-stats { opacity: 0; animation: fadeUp 0.5s 0.45s ease forwards; }
         .orbit-chip {
           position: absolute;
           display: flex; align-items: center; justify-content: center;
@@ -290,11 +280,7 @@ const HomePage = () => {
           animation: floatChip ease-in-out infinite;
         }
         .orbit-chip-inner { display: flex; flex-direction: column; align-items: center; gap: 3px; }
-        .orbit-chip-label {
-          font-size: 9px; font-weight: 700; color: var(--accent);
-          letter-spacing: 0.5px;
-        }
-
+        .orbit-chip-label { font-size: 9px; font-weight: 700; color: var(--accent); letter-spacing: 0.5px; }
         .btn-primary-hero {
           background: var(--accent); color: #fff; border: none;
           border-radius: 8px; padding: 11px 22px; font-size: 13px;
@@ -302,11 +288,7 @@ const HomePage = () => {
           transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
           display: inline-block; text-decoration: none;
         }
-        .btn-primary-hero:hover {
-          background: var(--accent-hover);
-          transform: translateY(-2px);
-          box-shadow: var(--shadow-btn);
-        }
+        .btn-primary-hero:hover { background: var(--accent-hover); transform: translateY(-2px); box-shadow: var(--shadow-btn); }
         .btn-ghost-hero {
           background: transparent; color: var(--accent);
           border: 1.5px solid var(--border); border-radius: 8px;
@@ -314,16 +296,8 @@ const HomePage = () => {
           cursor: pointer; transition: border-color 0.15s, background 0.15s, transform 0.15s;
           display: inline-block; text-decoration: none;
         }
-        .btn-ghost-hero:hover {
-          border-color: var(--accent);
-          background: var(--accent-dim);
-          transform: translateY(-2px);
-        }
-
-        .link-view-all {
-          color: var(--accent); font-size: 13px; font-weight: 600;
-          transition: opacity 0.15s;
-        }
+        .btn-ghost-hero:hover { border-color: var(--accent); background: var(--accent-dim); transform: translateY(-2px); }
+        .link-view-all { color: var(--accent); font-size: 13px; font-weight: 600; transition: opacity 0.15s; }
         .link-view-all:hover { opacity: 0.7; }
       `}</style>
 
@@ -333,33 +307,33 @@ const HomePage = () => {
         <div style={s.heroLeft}>
           <div className="hero-eyebrow" style={s.eyebrow}>
             <span style={s.eyebrowLine} />
-            Premium PC Store
+            {t('home.eyebrow')}
           </div>
           <h1 className="hero-title" style={s.heroTitle}>
-            Build Your<br />
-            <span style={s.heroAccent}>Dream PC</span>
+            {t('home.title1')}<br />
+            <span style={s.heroAccent}>{t('home.title2')}</span>
           </h1>
           <p className="hero-sub" style={s.heroSub}>
-            Laptops, desktops and components — all in one place. AI-powered builds.
+            {t('home.subtitle')}
           </p>
           <div className="hero-btns" style={s.heroBtns}>
-            <Link to="/products" className="btn-primary-hero">Browse Products</Link>
-            <Link to="/builds" className="btn-ghost-hero">AI PC Builder</Link>
+            <Link to="/products" className="btn-primary-hero">{t('home.browseProducts')}</Link>
+            <Link to="/builds" className="btn-ghost-hero">{t('home.aiBuilder')}</Link>
           </div>
           <div className="hero-stats" style={s.heroStats}>
             <div style={s.stat}>
               <span style={s.statNum}>2.4K+</span>
-              <span style={s.statLabel}>Products</span>
+              <span style={s.statLabel}>{t('home.products')}</span>
             </div>
             <div style={s.statDivider} />
             <div style={s.stat}>
               <span style={s.statNum}>18K</span>
-              <span style={s.statLabel}>Orders</span>
+              <span style={s.statLabel}>{t('home.orders')}</span>
             </div>
             <div style={s.statDivider} />
             <div style={s.stat}>
               <span style={s.statNum}>4.9★</span>
-              <span style={s.statLabel}>Rating</span>
+              <span style={s.statLabel}>{t('home.rating')}</span>
             </div>
           </div>
         </div>
@@ -407,15 +381,15 @@ const HomePage = () => {
 
       <div style={s.section}>
         <div style={s.sectionHeader}>
-          <h2 style={s.sectionTitle}>Top Rated Products</h2>
-          <Link to="/products" className="link-view-all">View all →</Link>
+          <h2 style={s.sectionTitle}>{t('home.topRated')}</h2>
+          <Link to="/products" className="link-view-all">{t('home.viewAll')}</Link>
         </div>
         {loading ? (
           <div style={s.grid}>
             {[1, 2, 3, 4, 5].map(i => <div key={i} style={s.skeleton} />)}
           </div>
         ) : !products.length ? (
-          <p style={s.empty}>No products yet</p>
+          <p style={s.empty}>{t('home.noProducts')}</p>
         ) : (
           <div style={s.grid}>
             {products.map(p => <ProductCard key={p.id} p={p} />)}
@@ -424,9 +398,9 @@ const HomePage = () => {
       </div>
 
       <div style={s.cta}>
-        <h2 style={s.ctaTitle}>Ready to build your PC?</h2>
-        <p style={s.ctaSub}>Let our AI assistant create the perfect build for your budget and needs</p>
-        <Link to="/builds" className="btn-primary-hero">Start with AI Builder</Link>
+        <h2 style={s.ctaTitle}>{t('home.ctaTitle')}</h2>
+        <p style={s.ctaSub}>{t('home.ctaDesc')}</p>
+        <Link to="/builds" className="btn-primary-hero">{t('home.ctaBtn')}</Link>
       </div>
     </Layout>
   )
@@ -488,9 +462,7 @@ const s = {
     letterSpacing: '-0.5px',
     marginBottom: '12px',
   },
-  heroAccent: {
-    color: 'var(--accent)',
-  },
+  heroAccent: { color: 'var(--accent)' },
   heroSub: {
     color: 'var(--text-secondary)',
     fontSize: '13px',
@@ -509,10 +481,7 @@ const s = {
     alignItems: 'center',
     gap: '16px',
   },
-  stat: {
-    display: 'flex',
-    flexDirection: 'column',
-  },
+  stat: { display: 'flex', flexDirection: 'column' },
   statNum: {
     color: 'var(--text-primary)',
     fontSize: '18px',
@@ -527,11 +496,7 @@ const s = {
     textTransform: 'uppercase',
     marginTop: '2px',
   },
-  statDivider: {
-    width: '1px',
-    height: '28px',
-    background: 'var(--border)',
-  },
+  statDivider: { width: '1px', height: '28px', background: 'var(--border)' },
   heroRight: {
     background: 'var(--bg-secondary)',
     borderLeft: '1px solid var(--border)',
@@ -542,11 +507,7 @@ const s = {
     overflow: 'hidden',
     zIndex: 1,
   },
-  scene: {
-    position: 'relative',
-    width: '260px',
-    height: '260px',
-  },
+  scene: { position: 'relative', width: '260px', height: '260px' },
   ring1: {
     position: 'absolute',
     top: '50%',
@@ -604,36 +565,17 @@ const s = {
     cursor: 'default',
     transition: 'border-color 0.18s, transform 0.18s',
   },
-  featIcon: {
-    marginBottom: '8px',
-    transition: 'color 0.18s',
-    display: 'flex',
-  },
-  featTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '600',
-    marginBottom: '3px',
-  },
-  featDesc: {
-    color: 'var(--text-secondary)',
-    fontSize: '11px',
-  },
-  section: {
-    marginBottom: '20px',
-    animation: 'fadeUp 0.4s ease 0.13s both',
-  },
+  featIcon: { marginBottom: '8px', transition: 'color 0.18s', display: 'flex' },
+  featTitle: { color: 'var(--text-primary)', fontSize: '13px', fontWeight: '600', marginBottom: '3px' },
+  featDesc: { color: 'var(--text-secondary)', fontSize: '11px' },
+  section: { marginBottom: '20px', animation: 'fadeUp 0.4s ease 0.13s both' },
   sectionHeader: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: '14px',
   },
-  sectionTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '16px',
-    fontWeight: '700',
-  },
+  sectionTitle: { color: 'var(--text-primary)', fontSize: '16px', fontWeight: '700' },
   grid: {
     display: 'grid',
     gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
@@ -646,10 +588,7 @@ const s = {
     border: '1px solid var(--border)',
     animation: 'skeletonPulse 1.4s ease infinite',
   },
-  empty: {
-    color: 'var(--text-secondary)',
-    fontSize: '14px',
-  },
+  empty: { color: 'var(--text-secondary)', fontSize: '14px' },
   card: {
     background: 'var(--bg-card)',
     border: '1px solid var(--border)',
@@ -666,14 +605,8 @@ const s = {
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  img: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  cardBody: {
-    padding: '14px',
-  },
+  img: { width: '100%', height: '100%', objectFit: 'cover' },
+  cardBody: { padding: '14px' },
   cardBadge: {
     background: 'var(--accent-dim)',
     color: 'var(--accent)',
@@ -685,27 +618,10 @@ const s = {
     borderRadius: '4px',
     display: 'inline-block',
   },
-  cardName: {
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '600',
-    margin: '8px 0 10px',
-    lineHeight: '1.4',
-  },
-  cardBottom: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  cardPrice: {
-    color: 'var(--accent)',
-    fontSize: '15px',
-    fontWeight: '800',
-  },
-  cardRating: {
-    color: 'var(--warning)',
-    fontSize: '11px',
-  },
+  cardName: { color: 'var(--text-primary)', fontSize: '13px', fontWeight: '600', margin: '8px 0 10px', lineHeight: '1.4' },
+  cardBottom: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
+  cardPrice: { color: 'var(--accent)', fontSize: '15px', fontWeight: '800' },
+  cardRating: { color: 'var(--warning)', fontSize: '11px' },
   cta: {
     background: 'var(--bg-card)',
     border: '1px solid var(--border)',
@@ -714,19 +630,8 @@ const s = {
     textAlign: 'center',
     animation: 'fadeUp 0.4s ease 0.18s both',
   },
-  ctaTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '22px',
-    fontWeight: '800',
-    marginBottom: '8px',
-    letterSpacing: '-0.3px',
-  },
-  ctaSub: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-    marginBottom: '24px',
-    lineHeight: '1.6',
-  },
+  ctaTitle: { color: 'var(--text-primary)', fontSize: '22px', fontWeight: '800', marginBottom: '8px', letterSpacing: '-0.3px' },
+  ctaSub: { color: 'var(--text-secondary)', fontSize: '13px', marginBottom: '24px', lineHeight: '1.6' },
 }
 
 export default HomePage

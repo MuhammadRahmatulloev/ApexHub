@@ -49,10 +49,8 @@ class SellerLocationViewSet(viewsets.GenericViewSet):
         )
         if serializer.is_valid():
             count = SellerLocation.objects.filter(seller=request.user).count()
-            if count == 0:
-                data = serializer.validated_data
-                data['is_main'] = True
-            serializer.save()
+            is_main = count == 0
+            serializer.save(is_main=is_main)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

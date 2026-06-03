@@ -1,24 +1,26 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
-const STATUS_CONFIG = {
-  CREATED: { label: 'Created', color: 'var(--warning)', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)' },
-  PAID: { label: 'Paid', color: 'var(--success)', bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.25)' },
-  SHIPPING: { label: 'Shipping', color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.25)' },
-  DELIVERED: { label: 'Delivered', color: 'var(--success)', bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.25)' },
-  CANCELLED: { label: 'Cancelled', color: 'var(--danger)', bg: 'rgba(248,113,113,0.1)', border: 'rgba(248,113,113,0.25)' },
-}
-
-const STATUS_STEPS = ['CREATED', 'PAID', 'SHIPPING', 'DELIVERED']
-
 const OrdersPage = () => {
+  const { t } = useTranslation()
   const [orders, setOrders] = useState([])
   const [loading, setLoading] = useState(true)
   const [expandedId, setExpandedId] = useState(null)
   const [cancellingId, setCancellingId] = useState(null)
   const [filter, setFilter] = useState('ALL')
+
+  const STATUS_CONFIG = {
+    CREATED: { label: t('orders.statuses.CREATED'), color: 'var(--warning)', bg: 'rgba(251,191,36,0.1)', border: 'rgba(251,191,36,0.25)' },
+    PAID: { label: t('orders.statuses.PAID'), color: 'var(--success)', bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.25)' },
+    SHIPPING: { label: t('orders.statuses.SHIPPING'), color: '#60a5fa', bg: 'rgba(96,165,250,0.1)', border: 'rgba(96,165,250,0.25)' },
+    DELIVERED: { label: t('orders.statuses.DELIVERED'), color: 'var(--success)', bg: 'rgba(52,211,153,0.1)', border: 'rgba(52,211,153,0.25)' },
+    CANCELLED: { label: t('orders.statuses.CANCELLED'), color: 'var(--danger)', bg: 'rgba(248,113,113,0.1)', border: 'rgba(248,113,113,0.25)' },
+  }
+
+  const STATUS_STEPS = ['CREATED', 'PAID', 'SHIPPING', 'DELIVERED']
 
   useEffect(() => {
     api.get('/orders/my_orders/')
@@ -134,9 +136,9 @@ const OrdersPage = () => {
       <div style={s.page}>
         <div style={s.topBar}>
           <div>
-            <h1 style={s.title}>My Orders</h1>
+            <h1 style={s.title}>{t('orders.title')}</h1>
             {!loading && (
-              <p style={s.sub}>{orders.length} order{orders.length !== 1 ? 's' : ''} total</p>
+              <p style={s.sub}>{orders.length} {t('orders.total')}</p>
             )}
           </div>
         </div>
@@ -149,7 +151,7 @@ const OrdersPage = () => {
                 className={filter === f ? 'filter-btn-active' : 'filter-btn'}
                 onClick={() => setFilter(f)}
               >
-                {f === 'ALL' ? 'All' : STATUS_CONFIG[f]?.label}
+                {f === 'ALL' ? t('orders.all') : STATUS_CONFIG[f]?.label}
                 {f !== 'ALL' && orders.filter(o => o.status === f).length > 0 && (
                   <span style={{ marginLeft: '5px', opacity: 0.75 }}>
                     {orders.filter(o => o.status === f).length}
@@ -175,12 +177,14 @@ const OrdersPage = () => {
                 <circle cx="28" cy="31" r="2"/>
               </svg>
             </div>
-            <p style={s.emptyTitle}>{filter === 'ALL' ? 'No orders yet' : `No ${STATUS_CONFIG[filter]?.label.toLowerCase()} orders`}</p>
+            <p style={s.emptyTitle}>
+              {filter === 'ALL' ? t('orders.noOrders') : t('orders.noFilterOrders', { status: STATUS_CONFIG[filter]?.label })}
+            </p>
             <p style={s.emptyDesc}>
-              {filter === 'ALL' ? 'Place your first order from the Cart' : 'Try a different filter'}
+              {filter === 'ALL' ? t('orders.noOrdersDesc') : t('orders.tryFilter')}
             </p>
             {filter === 'ALL' && (
-              <Link to="/products" style={s.browseBtn}>Browse Products</Link>
+              <Link to="/products" style={s.browseBtn}>{t('orders.browse')}</Link>
             )}
           </div>
         ) : (
@@ -200,13 +204,13 @@ const OrdersPage = () => {
                 >
                   <div style={s.cardHead}>
                     <div style={s.cardHeadLeft}>
-                      <div style={s.orderNum}>Order #{order.id}</div>
+                      <div style={s.orderNum}>{t('orders.order')} #{order.id}</div>
                       <span style={{ ...s.statusBadge, color: cfg.color, background: cfg.bg, border: `1px solid ${cfg.border}` }}>
                         {cfg.label}
                       </span>
                     </div>
                     <div style={s.cardHeadRight}>
-                      <span style={s.orderDate}>{new Date(order.created_at).toLocaleDateString('ru-RU')}</span>
+                      <span style={s.orderDate}>{new Date(order.created_at).toLocaleDateString()}</span>
                       <span style={s.orderTotal}>${order.total_price}</span>
                       <span style={{ color: 'var(--text-muted)', fontSize: '13px', transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'inline-block' }}>
                         ▾
@@ -259,7 +263,7 @@ const OrdersPage = () => {
                                 )
                               }
                             </div>
-                            <span style={s.itemName}>{item.product?.name || 'Product'}</span>
+                            <span style={s.itemName}>{item.product?.name || t('common.noImage')}</span>
                             <span style={s.itemQty}>×{item.quantity}</span>
                             <span style={s.itemPrice}>${item.total_price}</span>
                           </div>
@@ -290,7 +294,7 @@ const OrdersPage = () => {
 
                         <div style={s.expandedActions}>
                           <div style={s.totalRow}>
-                            <span style={s.totalLabel}>Total</span>
+                            <span style={s.totalLabel}>{t('cart.total')}</span>
                             <span style={s.totalVal}>${order.total_price}</span>
                           </div>
                           {order.status === 'CREATED' && (
@@ -299,7 +303,7 @@ const OrdersPage = () => {
                               onClick={(e) => cancelOrder(order.id, e)}
                               disabled={cancellingId === order.id}
                             >
-                              {cancellingId === order.id ? 'Cancelling...' : 'Cancel Order'}
+                              {cancellingId === order.id ? t('orders.cancelling') : t('orders.cancel')}
                             </button>
                           )}
                         </div>
@@ -317,250 +321,45 @@ const OrdersPage = () => {
 }
 
 const s = {
-  page: {
-    animation: 'fadeUp 0.35s ease both',
-  },
-  topBar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '20px',
-    flexWrap: 'wrap',
-    gap: '12px',
-  },
-  title: {
-    color: 'var(--text-primary)',
-    fontSize: '26px',
-    fontWeight: '700',
-    marginBottom: '4px',
-    letterSpacing: '-0.3px',
-  },
-  sub: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  filtersRow: {
-    display: 'flex',
-    gap: '6px',
-    flexWrap: 'wrap',
-    marginBottom: '20px',
-  },
-  list: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '12px',
-  },
-  cardHead: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: '16px 20px',
-    gap: '12px',
-    flexWrap: 'wrap',
-  },
-  cardHeadLeft: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-  },
-  orderNum: {
-    color: 'var(--text-primary)',
-    fontSize: '15px',
-    fontWeight: '700',
-  },
-  statusBadge: {
-    fontSize: '11px',
-    fontWeight: '700',
-    padding: '3px 10px',
-    borderRadius: '20px',
-    letterSpacing: '0.3px',
-  },
-  cardHeadRight: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-  },
-  orderDate: {
-    color: 'var(--text-muted)',
-    fontSize: '12px',
-  },
-  orderTotal: {
-    color: 'var(--accent)',
-    fontSize: '17px',
-    fontWeight: '800',
-    letterSpacing: '-0.2px',
-  },
-  progressWrap: {
-    paddingLeft: '20px',
-    paddingRight: '20px',
-    paddingBottom: '16px',
-  },
-  progressBar: {
-    display: 'flex',
-    alignItems: 'flex-start',
-    gap: '0',
-  },
-  progressStep: {
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    flex: 1,
-    position: 'relative',
-  },
-  progressDot: {
-    width: '10px',
-    height: '10px',
-    borderRadius: '50%',
-    zIndex: 1,
-    transition: 'all 0.2s',
-    marginBottom: '6px',
-  },
-  progressLine: {
-    position: 'absolute',
-    top: '4px',
-    left: '50%',
-    width: '100%',
-    height: '2px',
-    transition: 'background 0.2s',
-    zIndex: 0,
-  },
-  progressLabel: {
-    fontSize: '10px',
-    textAlign: 'center',
-    transition: 'color 0.2s',
-  },
-  expandedSection: {
-    paddingLeft: '20px',
-    paddingRight: '20px',
-    paddingBottom: '16px',
-  },
-  divider: {
-    height: '1px',
-    background: 'var(--border)',
-    marginBottom: '14px',
-  },
-  itemsList: {
-    marginBottom: '14px',
-  },
-  itemImgWrap: {
-    width: '40px',
-    height: '40px',
-    borderRadius: '8px',
-    background: 'var(--bg-hover)',
-    border: '1px solid var(--border)',
-    overflow: 'hidden',
-    flexShrink: 0,
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemImg: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  itemName: {
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '500',
-    flex: 1,
-    minWidth: 0,
-    overflow: 'hidden',
-    textOverflow: 'ellipsis',
-    whiteSpace: 'nowrap',
-  },
-  itemQty: {
-    color: 'var(--text-secondary)',
-    fontSize: '12px',
-    flexShrink: 0,
-  },
-  itemPrice: {
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '600',
-    flexShrink: 0,
-  },
-  expandedFooter: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '12px',
-  },
-  orderMeta: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
-  },
-  metaItem: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '6px',
-    color: 'var(--text-secondary)',
-    fontSize: '12px',
-  },
-  expandedActions: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '14px',
-  },
-  totalRow: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '8px',
-  },
-  totalLabel: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  totalVal: {
-    color: 'var(--accent)',
-    fontSize: '20px',
-    fontWeight: '800',
-    letterSpacing: '-0.3px',
-  },
-  emptyState: {
-    background: 'var(--bg-card)',
-    border: '1px solid var(--border)',
-    borderRadius: '14px',
-    padding: '80px 24px',
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    gap: '10px',
-    textAlign: 'center',
-  },
-  emptyIcon: {
-    width: '72px',
-    height: '72px',
-    borderRadius: '18px',
-    background: 'var(--bg-hover)',
-    border: '1px solid var(--border)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: '4px',
-  },
-  emptyTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '16px',
-    fontWeight: '600',
-  },
-  emptyDesc: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  browseBtn: {
-    marginTop: '8px',
-    background: 'var(--accent)',
-    color: '#fff',
-    borderRadius: '8px',
-    padding: '10px 22px',
-    fontSize: '13px',
-    fontWeight: '700',
-    textDecoration: 'none',
-    display: 'inline-block',
-  },
+  page: { animation: 'fadeUp 0.35s ease both' },
+  topBar: { display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '20px', flexWrap: 'wrap', gap: '12px' },
+  title: { color: 'var(--text-primary)', fontSize: '26px', fontWeight: '700', marginBottom: '4px', letterSpacing: '-0.3px' },
+  sub: { color: 'var(--text-secondary)', fontSize: '13px' },
+  filtersRow: { display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '20px' },
+  list: { display: 'flex', flexDirection: 'column', gap: '12px' },
+  cardHead: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px 20px', gap: '12px', flexWrap: 'wrap' },
+  cardHeadLeft: { display: 'flex', alignItems: 'center', gap: '10px' },
+  orderNum: { color: 'var(--text-primary)', fontSize: '15px', fontWeight: '700' },
+  statusBadge: { fontSize: '11px', fontWeight: '700', padding: '3px 10px', borderRadius: '20px', letterSpacing: '0.3px' },
+  cardHeadRight: { display: 'flex', alignItems: 'center', gap: '14px' },
+  orderDate: { color: 'var(--text-muted)', fontSize: '12px' },
+  orderTotal: { color: 'var(--accent)', fontSize: '17px', fontWeight: '800', letterSpacing: '-0.2px' },
+  progressWrap: { paddingLeft: '20px', paddingRight: '20px', paddingBottom: '16px' },
+  progressBar: { display: 'flex', alignItems: 'flex-start', gap: '0' },
+  progressStep: { display: 'flex', flexDirection: 'column', alignItems: 'center', flex: 1, position: 'relative' },
+  progressDot: { width: '10px', height: '10px', borderRadius: '50%', zIndex: 1, transition: 'all 0.2s', marginBottom: '6px' },
+  progressLine: { position: 'absolute', top: '4px', left: '50%', width: '100%', height: '2px', transition: 'background 0.2s', zIndex: 0 },
+  progressLabel: { fontSize: '10px', textAlign: 'center', transition: 'color 0.2s' },
+  expandedSection: { paddingLeft: '20px', paddingRight: '20px', paddingBottom: '16px' },
+  divider: { height: '1px', background: 'var(--border)', marginBottom: '14px' },
+  itemsList: { marginBottom: '14px' },
+  itemImgWrap: { width: '40px', height: '40px', borderRadius: '8px', background: 'var(--bg-hover)', border: '1px solid var(--border)', overflow: 'hidden', flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' },
+  itemImg: { width: '100%', height: '100%', objectFit: 'cover' },
+  itemName: { color: 'var(--text-primary)', fontSize: '13px', fontWeight: '500', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' },
+  itemQty: { color: 'var(--text-secondary)', fontSize: '12px', flexShrink: 0 },
+  itemPrice: { color: 'var(--text-primary)', fontSize: '13px', fontWeight: '600', flexShrink: 0 },
+  expandedFooter: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '12px' },
+  orderMeta: { display: 'flex', flexDirection: 'column', gap: '5px' },
+  metaItem: { display: 'flex', alignItems: 'center', gap: '6px', color: 'var(--text-secondary)', fontSize: '12px' },
+  expandedActions: { display: 'flex', alignItems: 'center', gap: '14px' },
+  totalRow: { display: 'flex', alignItems: 'center', gap: '8px' },
+  totalLabel: { color: 'var(--text-secondary)', fontSize: '13px' },
+  totalVal: { color: 'var(--accent)', fontSize: '20px', fontWeight: '800', letterSpacing: '-0.3px' },
+  emptyState: { background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: '14px', padding: '80px 24px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '10px', textAlign: 'center' },
+  emptyIcon: { width: '72px', height: '72px', borderRadius: '18px', background: 'var(--bg-hover)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: '4px' },
+  emptyTitle: { color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' },
+  emptyDesc: { color: 'var(--text-secondary)', fontSize: '13px' },
+  browseBtn: { marginTop: '8px', background: 'var(--accent)', color: '#fff', borderRadius: '8px', padding: '10px 22px', fontSize: '13px', fontWeight: '700', textDecoration: 'none', display: 'inline-block' },
 }
 
 export default OrdersPage

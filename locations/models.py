@@ -5,12 +5,8 @@ User = get_user_model()
 
 
 class SellerLocation(models.Model):
-    seller = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name='locations'
-    )
-    name = models.CharField(max_length=255)
+    seller = models.ForeignKey(User, on_delete=models.CASCADE, related_name='locations')
+    name = models.CharField(max_length=255, default='My Store')
     address = models.CharField(max_length=500)
     lat = models.FloatField()
     lng = models.FloatField()
@@ -21,15 +17,7 @@ class SellerLocation(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return f"{self.seller.email} — {self.name}"
-
-    def save(self, *args, **kwargs):
-        if self.is_main:
-            SellerLocation.objects.filter(
-                seller=self.seller,
-                is_main=True
-            ).exclude(pk=self.pk).update(is_main=False)
-        super().save(*args, **kwargs)
+        return f"{self.seller.email} - {self.name}"
 
     class Meta:
         ordering = ['-is_main', 'name']

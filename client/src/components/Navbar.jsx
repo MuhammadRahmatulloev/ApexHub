@@ -1,10 +1,13 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useTheme } from '../context/ThemeContext'
+import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from './LanguageSwitcher'
 
 const Navbar = () => {
   const { user, logout } = useAuth()
   const { theme, toggleTheme } = useTheme()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const location = useLocation()
 
@@ -16,39 +19,39 @@ const Navbar = () => {
   const isActive = (path) => location.pathname === path
 
   const clientLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/products', label: 'Products' },
-    { to: '/builds', label: 'Builds' },
-    { to: '/chat', label: 'AI Chat' },
-    { to: '/favorites', label: 'Favorites' },
-    { to: '/cart', label: 'Cart' },
-    { to: '/orders', label: 'Orders' },
-    { to: '/news', label: 'News' },
-    { to: '/locations', label: 'Locations' },
+    { to: '/', label: t('nav.home') },
+    { to: '/products', label: t('nav.products') },
+    { to: '/builds', label: t('nav.builds') },
+    { to: '/chat', label: t('nav.chat') },
+    { to: '/favorites', label: t('nav.favorites') },
+    { to: '/cart', label: t('nav.cart') },
+    { to: '/orders', label: t('nav.orders') },
+    { to: '/news', label: t('nav.news') },
+    { to: '/locations', label: t('nav.locations') },
   ]
 
   const sellerLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/products', label: 'Products' },
-    { to: '/seller', label: 'My Shop' },
-    { to: '/news', label: 'News' },
-    { to: '/locations', label: 'Locations' },
+    { to: '/', label: t('nav.home') },
+    { to: '/products', label: t('nav.products') },
+    { to: '/seller', label: t('nav.myShop') },
+    { to: '/news', label: t('nav.news') },
+    { to: '/locations', label: t('nav.locations') },
   ]
 
   const adminLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/products', label: 'Products' },
-    { to: '/admin/products', label: 'My Shop' },
-    { to: '/news', label: 'News' },
-    { to: '/admin/news', label: 'Manage News' },
-    { to: '/locations', label: 'Locations' },
+    { to: '/', label: t('nav.home') },
+    { to: '/products', label: t('nav.products') },
+    { to: '/admin/products', label: t('nav.myShop') },
+    { to: '/news', label: t('nav.news') },
+    { to: '/admin/news', label: t('nav.manageNews') },
+    { to: '/locations', label: t('nav.locations') },
   ]
 
   const guestLinks = [
-    { to: '/', label: 'Home' },
-    { to: '/products', label: 'Products' },
-    { to: '/news', label: 'News' },
-    { to: '/locations', label: 'Locations' },
+    { to: '/', label: t('nav.home') },
+    { to: '/products', label: t('nav.products') },
+    { to: '/news', label: t('nav.news') },
+    { to: '/locations', label: t('nav.locations') },
   ]
 
   const getLinks = () => {
@@ -181,6 +184,8 @@ const Navbar = () => {
           </div>
 
           <div style={s.right}>
+            <LanguageSwitcher />
+
             <button onClick={toggleTheme} className="nav-theme-btn" title="Toggle theme">
               {theme === 'dark' ? (
                 <svg width="15" height="15" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
@@ -202,12 +207,12 @@ const Navbar = () => {
                     <path d="M1.5 14c0-3.5 3-6 6.5-6s6.5 2.5 6.5 6"/>
                   </svg>
                 </Link>
-                <button onClick={handleLogout} className="nav-logout-btn">Logout</button>
+                <button onClick={handleLogout} className="nav-logout-btn">{t('nav.logout')}</button>
               </>
             ) : (
               <>
-                <Link to="/login" className="nav-login-link">Login</Link>
-                <Link to="/register" className="nav-register-btn">Register</Link>
+                <Link to="/login" className="nav-login-link">{t('nav.login')}</Link>
+                <Link to="/register" className="nav-register-btn">{t('nav.register')}</Link>
               </>
             )}
           </div>

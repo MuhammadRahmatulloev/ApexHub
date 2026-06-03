@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const CartPage = () => {
+  const { t } = useTranslation()
   const [cart, setCart] = useState(null)
   const [loading, setLoading] = useState(true)
   const [ordering, setOrdering] = useState(false)
@@ -29,12 +31,6 @@ const CartPage = () => {
     setRemovingId(null)
   }
 
-  const updateQuantity = async (productId, quantity) => {
-    if (quantity < 1) return
-    await api.post('/orders/cart/add_item/', { product_id: productId, quantity: 0 }).catch(() => {})
-    fetchCart()
-  }
-
   const clearCart = async () => {
     await api.delete('/orders/cart/clear/')
     fetchCart()
@@ -50,7 +46,7 @@ const CartPage = () => {
       })
       navigate('/orders')
     } catch (err) {
-      setOrderError(err.response?.data?.non_field_errors?.[0] || 'Error creating order')
+      setOrderError(err.response?.data?.non_field_errors?.[0] || t('common.error'))
     }
     setOrdering(false)
   }
@@ -74,12 +70,8 @@ const CartPage = () => {
           border-bottom: 1px solid var(--border);
           transition: background 0.15s;
         }
-        .cart-item-row:last-child {
-          border-bottom: none;
-        }
-        .cart-item-row:hover {
-          background: var(--bg-hover);
-        }
+        .cart-item-row:last-child { border-bottom: none; }
+        .cart-item-row:hover { background: var(--bg-hover); }
         .remove-btn {
           background: transparent;
           border: 1px solid rgba(248,113,113,0.3);
@@ -93,14 +85,8 @@ const CartPage = () => {
           transition: border-color 0.15s, background 0.15s;
           white-space: nowrap;
         }
-        .remove-btn:hover {
-          border-color: var(--danger);
-          background: rgba(248,113,113,0.08);
-        }
-        .remove-btn:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
+        .remove-btn:hover { border-color: var(--danger); background: rgba(248,113,113,0.08); }
+        .remove-btn:disabled { opacity: 0.4; cursor: not-allowed; }
         .clear-btn {
           background: transparent;
           border: 1px solid var(--border);
@@ -113,10 +99,7 @@ const CartPage = () => {
           font-family: inherit;
           transition: border-color 0.15s, color 0.15s;
         }
-        .clear-btn:hover {
-          border-color: var(--danger);
-          color: var(--danger);
-        }
+        .clear-btn:hover { border-color: var(--danger); color: var(--danger); }
         .order-btn {
           width: 100%;
           background: var(--accent);
@@ -131,15 +114,8 @@ const CartPage = () => {
           transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
           letter-spacing: 0.2px;
         }
-        .order-btn:hover:not(:disabled) {
-          background: var(--accent-hover);
-          transform: translateY(-1px);
-          box-shadow: var(--shadow-btn);
-        }
-        .order-btn:disabled {
-          background: var(--text-muted);
-          cursor: not-allowed;
-        }
+        .order-btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); box-shadow: var(--shadow-btn); }
+        .order-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
         .summary-input {
           width: 100%;
           background: var(--bg-hover);
@@ -170,13 +146,15 @@ const CartPage = () => {
       <div style={s.page}>
         <div style={s.topBar}>
           <div>
-            <h1 style={s.title}>My Cart</h1>
+            <h1 style={s.title}>{t('cart.title')}</h1>
             {!loading && cart?.items?.length > 0 && (
-              <p style={s.sub}>{cart.total_items} item{cart.total_items !== 1 ? 's' : ''}</p>
+              <p style={s.sub}>
+                {cart.total_items} {cart.total_items !== 1 ? t('cart.items') : t('cart.item')}
+              </p>
             )}
           </div>
           {!loading && cart?.items?.length > 0 && (
-            <button className="clear-btn" onClick={clearCart}>Clear cart</button>
+            <button className="clear-btn" onClick={clearCart}>{t('cart.clearCart')}</button>
           )}
         </div>
 
@@ -198,9 +176,9 @@ const CartPage = () => {
                 <circle cx="27" cy="31" r="2"/>
               </svg>
             </div>
-            <p style={s.emptyTitle}>Your cart is empty</p>
-            <p style={s.emptyDesc}>Add some products to get started</p>
-            <Link to="/products" style={s.browseBtn}>Browse Products</Link>
+            <p style={s.emptyTitle}>{t('cart.empty')}</p>
+            <p style={s.emptyDesc}>{t('cart.emptyDesc')}</p>
+            <Link to="/products" style={s.browseBtn}>{t('cart.browse')}</Link>
           </div>
         ) : (
           <div style={s.grid}>
@@ -241,7 +219,7 @@ const CartPage = () => {
                         onClick={() => removeItem(item.product.id)}
                         disabled={removingId === item.product.id}
                       >
-                        {removingId === item.product.id ? '...' : 'Remove'}
+                        {removingId === item.product.id ? t('cart.removing') : t('cart.remove')}
                       </button>
                     </div>
                   </div>
@@ -251,35 +229,35 @@ const CartPage = () => {
 
             <div style={s.summaryCol}>
               <div style={s.summaryCard}>
-                <p style={s.summaryTitle}>Order Summary</p>
+                <p style={s.summaryTitle}>{t('cart.orderSummary')}</p>
 
                 <div style={s.summaryRows}>
                   <div style={s.summaryRow}>
-                    <span style={s.summaryLabel}>Items</span>
+                    <span style={s.summaryLabel}>{t('cart.items')}</span>
                     <span style={s.summaryVal}>{cart.total_items}</span>
                   </div>
                   <div style={s.divider} />
                   <div style={s.summaryRow}>
-                    <span style={s.summaryLabel}>Total</span>
+                    <span style={s.summaryLabel}>{t('cart.total')}</span>
                     <span style={s.summaryTotalVal}>${cart.total_price}</span>
                   </div>
                 </div>
 
                 <div style={s.formSection}>
                   <div style={s.formField}>
-                    <label style={s.formLabel}>Delivery address</label>
+                    <label style={s.formLabel}>{t('cart.deliveryAddress')}</label>
                     <input
                       className="summary-input"
-                      placeholder="Enter your address"
+                      placeholder={t('cart.deliveryPlaceholder')}
                       value={address}
                       onChange={e => setAddress(e.target.value)}
                     />
                   </div>
                   <div style={s.formField}>
-                    <label style={s.formLabel}>Note (optional)</label>
+                    <label style={s.formLabel}>{t('cart.note')}</label>
                     <input
                       className="summary-input"
-                      placeholder="Any special instructions"
+                      placeholder={t('cart.notePlaceholder')}
                       value={note}
                       onChange={e => setNote(e.target.value)}
                     />
@@ -301,14 +279,14 @@ const CartPage = () => {
                   onClick={createOrder}
                   disabled={ordering}
                 >
-                  {ordering ? 'Placing order...' : `Place Order · $${cart.total_price}`}
+                  {ordering ? t('cart.placingOrder') : `${t('cart.placeOrder')} · $${cart.total_price}`}
                 </button>
 
                 <p style={s.secureNote}>
                   <svg width="12" height="12" viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round">
                     <path d="M6 1L1 3v3c0 3 5 5 5 5s5-2 5-5V3z"/>
                   </svg>
-                  Secure checkout
+                  {t('cart.secureCheckout')}
                 </p>
               </div>
             </div>
@@ -320,9 +298,7 @@ const CartPage = () => {
 }
 
 const s = {
-  page: {
-    animation: 'fadeUp 0.35s ease both',
-  },
+  page: { animation: 'fadeUp 0.35s ease both' },
   topBar: {
     display: 'flex',
     justifyContent: 'space-between',
@@ -338,10 +314,7 @@ const s = {
     marginBottom: '4px',
     letterSpacing: '-0.3px',
   },
-  sub: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
+  sub: { color: 'var(--text-secondary)', fontSize: '13px' },
   grid: {
     display: 'grid',
     gridTemplateColumns: '1fr 320px',
@@ -367,15 +340,8 @@ const s = {
     alignItems: 'center',
     justifyContent: 'center',
   },
-  img: {
-    width: '100%',
-    height: '100%',
-    objectFit: 'cover',
-  },
-  itemInfo: {
-    flex: 1,
-    minWidth: 0,
-  },
+  img: { width: '100%', height: '100%', objectFit: 'cover' },
+  itemInfo: { flex: 1, minWidth: 0 },
   itemMeta: {
     display: 'flex',
     alignItems: 'center',
@@ -392,10 +358,7 @@ const s = {
     padding: '2px 7px',
     borderRadius: '4px',
   },
-  itemUnitPrice: {
-    color: 'var(--text-secondary)',
-    fontSize: '12px',
-  },
+  itemUnitPrice: { color: 'var(--text-secondary)', fontSize: '12px' },
   itemRight: {
     display: 'flex',
     flexDirection: 'column',
@@ -425,51 +388,30 @@ const s = {
     marginBottom: '16px',
     letterSpacing: '-0.2px',
   },
-  summaryRows: {
-    marginBottom: '16px',
-  },
+  summaryRows: { marginBottom: '16px' },
   summaryRow: {
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
     padding: '6px 0',
   },
-  summaryLabel: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
-  summaryVal: {
-    color: 'var(--text-primary)',
-    fontSize: '13px',
-    fontWeight: '500',
-  },
+  summaryLabel: { color: 'var(--text-secondary)', fontSize: '13px' },
+  summaryVal: { color: 'var(--text-primary)', fontSize: '13px', fontWeight: '500' },
   summaryTotalVal: {
     color: 'var(--accent)',
     fontSize: '22px',
     fontWeight: '800',
     letterSpacing: '-0.3px',
   },
-  divider: {
-    height: '1px',
-    background: 'var(--border)',
-    margin: '8px 0',
-  },
+  divider: { height: '1px', background: 'var(--border)', margin: '8px 0' },
   formSection: {
     display: 'flex',
     flexDirection: 'column',
     gap: '10px',
     marginBottom: '16px',
   },
-  formField: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '5px',
-  },
-  formLabel: {
-    color: 'var(--text-secondary)',
-    fontSize: '11px',
-    fontWeight: '500',
-  },
+  formField: { display: 'flex', flexDirection: 'column', gap: '5px' },
+  formLabel: { color: 'var(--text-secondary)', fontSize: '11px', fontWeight: '500' },
   errorBox: {
     display: 'flex',
     alignItems: 'center',
@@ -513,15 +455,8 @@ const s = {
     justifyContent: 'center',
     marginBottom: '4px',
   },
-  emptyTitle: {
-    color: 'var(--text-primary)',
-    fontSize: '16px',
-    fontWeight: '600',
-  },
-  emptyDesc: {
-    color: 'var(--text-secondary)',
-    fontSize: '13px',
-  },
+  emptyTitle: { color: 'var(--text-primary)', fontSize: '16px', fontWeight: '600' },
+  emptyDesc: { color: 'var(--text-secondary)', fontSize: '13px' },
   browseBtn: {
     marginTop: '8px',
     background: 'var(--accent)',

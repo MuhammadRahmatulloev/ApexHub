@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import api from '../api/axios'
 
 const RegisterPage = () => {
   const { register, handleSubmit, watch, formState: { errors } } = useForm()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
   const [step, setStep] = useState('register')
@@ -22,7 +24,7 @@ const RegisterPage = () => {
       setStep('verify')
     } catch (err) {
       const e = err.response?.data
-      setError(e?.email?.[0] || e?.password?.[0] || e?.username?.[0] || 'Registration failed')
+      setError(e?.email?.[0] || e?.password?.[0] || e?.username?.[0] || t('common.error'))
     } finally {
       setLoading(false)
     }
@@ -35,7 +37,7 @@ const RegisterPage = () => {
       await api.post('/auth/verify-email/', { email, code: data.code })
       navigate('/login')
     } catch {
-      setError('Invalid or expired code')
+      setError(t('auth.errors.invalidCredentials'))
     } finally {
       setLoading(false)
     }
@@ -169,8 +171,8 @@ const RegisterPage = () => {
         {step === 'register' ? (
           <div style={{ animation: 'fadeUp 0.4s ease both' }}>
             <div style={s.headGroup}>
-              <h1 style={s.title}>Create account</h1>
-              <p style={s.subtitle}>Join ApexHub today</p>
+              <h1 style={s.title}>{t('auth.registerTitle')}</h1>
+              <p style={s.subtitle}>{t('auth.registerSubtitle')}</p>
             </div>
 
             {error && (
@@ -185,46 +187,51 @@ const RegisterPage = () => {
 
             <form onSubmit={handleSubmit(onRegister)} style={s.form}>
               <div style={s.field}>
-                <label style={s.label}>Username</label>
+                <label style={s.label}>{t('auth.username')}</label>
                 <input
                   className="auth-input"
                   placeholder="your_username"
-                  {...register('username', { required: 'Required' })}
+                  {...register('username', { required: t('auth.errors.required') })}
                 />
                 {errors.username && <span style={s.fieldErr}>{errors.username.message}</span>}
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Email</label>
+                <label style={s.label}>{t('auth.email')}</label>
                 <input
                   className="auth-input"
                   type="email"
                   placeholder="you@example.com"
-                  {...register('email', { required: 'Required' })}
+                  {...register('email', { required: t('auth.errors.required') })}
                 />
                 {errors.email && <span style={s.fieldErr}>{errors.email.message}</span>}
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Age <span style={{ color: 'var(--text-muted)' }}>(optional)</span></label>
+                <label style={s.label}>
+                  {t('auth.age')} <span style={{ color: 'var(--text-muted)' }}>({t('common.optional') || 'optional'})</span>
+                </label>
                 <input
                   className="auth-input"
                   type="number"
                   placeholder="18"
-                  {...register('age', { min: { value: 13, message: 'Minimum age is 13' } })}
+                  {...register('age', { min: { value: 13, message: t('auth.errors.minAge') } })}
                 />
                 {errors.age && <span style={s.fieldErr}>{errors.age.message}</span>}
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Password</label>
+                <label style={s.label}>{t('auth.password')}</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     className="auth-input"
                     type={showPass ? 'text' : 'password'}
-                    placeholder="At least 8 characters"
+                    placeholder={t('profile.newPasswordPlaceholder')}
                     style={{ paddingRight: '44px' }}
-                    {...register('password', { required: 'Required', minLength: { value: 8, message: 'Minimum 8 characters' } })}
+                    {...register('password', {
+                      required: t('auth.errors.required'),
+                      minLength: { value: 8, message: t('auth.errors.minLength') }
+                    })}
                   />
                   <button type="button" className="show-pass-btn" onClick={() => setShowPass(v => !v)}>
                     {showPass ? (
@@ -245,16 +252,16 @@ const RegisterPage = () => {
               </div>
 
               <div style={s.field}>
-                <label style={s.label}>Confirm Password</label>
+                <label style={s.label}>{t('auth.confirmPassword')}</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     className="auth-input"
                     type={showPass2 ? 'text' : 'password'}
-                    placeholder="Repeat password"
+                    placeholder={t('profile.confirmPasswordPlaceholder')}
                     style={{ paddingRight: '44px' }}
                     {...register('password2', {
-                      required: 'Required',
-                      validate: v => v === watch('password') || 'Passwords do not match'
+                      required: t('auth.errors.required'),
+                      validate: v => v === watch('password') || t('auth.errors.passwordMismatch')
                     })}
                   />
                   <button type="button" className="show-pass-btn" onClick={() => setShowPass2(v => !v)}>
@@ -276,13 +283,13 @@ const RegisterPage = () => {
               </div>
 
               <button className="auth-btn" disabled={loading} style={{ marginTop: '4px' }}>
-                {loading ? 'Creating account...' : 'Create Account'}
+                {loading ? t('auth.creatingAccount') : t('auth.registerBtn')}
               </button>
             </form>
 
             <p style={s.footerText}>
-              Already have an account?{' '}
-              <Link to="/login" style={s.footerLink}>Sign in</Link>
+              {t('auth.hasAccount')}{' '}
+              <Link to="/login" style={s.footerLink}>{t('auth.signIn')}</Link>
             </p>
           </div>
         ) : (
@@ -295,9 +302,9 @@ const RegisterPage = () => {
             </div>
 
             <div style={s.headGroup}>
-              <h1 style={s.title}>Verify your email</h1>
+              <h1 style={s.title}>{t('auth.verifyEmail')}</h1>
               <p style={s.subtitle}>
-                We sent a 6-digit code to<br />
+                {t('auth.verifySubtitle')}<br />
                 <strong style={{ color: 'var(--text-primary)', fontWeight: '600' }}>{email}</strong>
               </p>
             </div>
@@ -318,17 +325,17 @@ const RegisterPage = () => {
                   className="code-input"
                   placeholder="······"
                   maxLength={6}
-                  {...register('code', { required: 'Required' })}
+                  {...register('code', { required: t('auth.errors.required') })}
                 />
                 {errors.code && <span style={{ ...s.fieldErr, textAlign: 'center' }}>{errors.code.message}</span>}
               </div>
 
               <button className="auth-btn" disabled={loading}>
-                {loading ? 'Verifying...' : 'Verify Email'}
+                {loading ? t('auth.verifying') : t('auth.verifyBtn')}
               </button>
 
               <button type="button" className="auth-btn-ghost" onClick={() => setStep('register')}>
-                ← Back to registration
+                {t('auth.backToRegister')}
               </button>
             </form>
           </div>

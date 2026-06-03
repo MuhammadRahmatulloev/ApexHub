@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const FavoritesPage = () => {
+  const { t } = useTranslation()
   const [favorites, setFavorites] = useState([])
   const [loading, setLoading] = useState(true)
 
@@ -21,13 +23,13 @@ const FavoritesPage = () => {
 
   return (
     <Layout>
-      <h1 style={s.title}>Favorites</h1>
+      <h1 style={s.title}>{t('favorites.title')}</h1>
       {loading ? (
-        <p style={s.muted}>Loading...</p>
+        <p style={s.muted}>{t('common.loading')}</p>
       ) : !favorites.length ? (
         <div style={s.empty}>
-          <p style={s.emptyText}>No favorites yet</p>
-          <Link to="/products" style={s.emptyLink}>Browse Products</Link>
+          <p style={s.emptyText}>{t('favorites.noFavorites')}</p>
+          <Link to="/products" style={s.emptyLink}>{t('favorites.browse')}</Link>
         </div>
       ) : (
         <div style={s.grid}>
@@ -36,7 +38,7 @@ const FavoritesPage = () => {
               <Link to={`/products/${fav.product.id}`} style={s.imgWrap}>
                 {fav.product.main_image
                   ? <img src={fav.product.main_image} alt={fav.product.name} style={s.img} />
-                  : <div style={s.noImg}>No image</div>
+                  : <div style={s.noImg}>{t('common.noImage')}</div>
                 }
               </Link>
               <div style={s.body}>
@@ -44,7 +46,7 @@ const FavoritesPage = () => {
                 <Link to={`/products/${fav.product.id}`} style={s.name}>{fav.product.name}</Link>
                 <div style={s.bottom}>
                   <span style={s.price}>${fav.product.price}</span>
-                  <button style={s.removeBtn} onClick={() => remove(fav.product.id)}>Remove</button>
+                  <button style={s.removeBtn} onClick={() => remove(fav.product.id)}>{t('favorites.remove')}</button>
                 </div>
               </div>
             </div>

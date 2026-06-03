@@ -1,12 +1,14 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import api from '../api/axios'
 
 const LoginPage = () => {
   const { register, handleSubmit, formState: { errors } } = useForm()
   const { login } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -30,7 +32,7 @@ const LoginPage = () => {
       login(res.data.user, res.data.access, res.data.refresh)
       navigate('/')
     } catch (err) {
-      setError(err.response?.data?.error || 'Invalid email or password')
+      setError(err.response?.data?.error || t('auth.errors.invalidCredentials'))
     } finally {
       setLoading(false)
     }
@@ -45,7 +47,7 @@ const LoginPage = () => {
       await api.post('/auth/forgot-password/', { email: forgotEmail })
       setForgotSent(true)
     } catch (err) {
-      setForgotError(err.response?.data?.error || 'Something went wrong')
+      setForgotError(err.response?.data?.error || t('common.error'))
     } finally {
       setForgotLoading(false)
     }
@@ -64,7 +66,7 @@ const LoginPage = () => {
       })
       setResetSuccess(true)
     } catch (err) {
-      setResetError(err.response?.data?.error || 'Something went wrong')
+      setResetError(err.response?.data?.error || t('common.error'))
     } finally {
       setResetLoading(false)
     }
@@ -199,8 +201,8 @@ const LoginPage = () => {
         {!forgotStep ? (
           <>
             <div style={s.headGroup}>
-              <h1 style={s.title}>Welcome back</h1>
-              <p style={s.subtitle}>Sign in to your account</p>
+              <h1 style={s.title}>{t('auth.loginTitle')}</h1>
+              <p style={s.subtitle}>{t('auth.loginSubtitle')}</p>
             </div>
 
             {error && (
@@ -215,21 +217,21 @@ const LoginPage = () => {
 
             <form onSubmit={handleSubmit(onSubmit)} style={s.form}>
               <div style={s.field}>
-                <label style={s.label}>Email</label>
+                <label style={s.label}>{t('auth.email')}</label>
                 <input
                   className="auth-input"
                   type="email"
                   placeholder="you@example.com"
-                  {...register('email', { required: 'Required' })}
+                  {...register('email', { required: t('auth.errors.required') })}
                 />
                 {errors.email && <span style={s.fieldErr}>{errors.email.message}</span>}
               </div>
 
               <div style={s.field}>
                 <div style={s.labelRow}>
-                  <label style={s.label}>Password</label>
+                  <label style={s.label}>{t('auth.password')}</label>
                   <button type="button" className="forgot-link" onClick={() => { setForgotStep(true); setError('') }}>
-                    Forgot password?
+                    {t('auth.forgotPassword')}
                   </button>
                 </div>
                 <div style={{ position: 'relative' }}>
@@ -238,7 +240,7 @@ const LoginPage = () => {
                     type={showPassword ? 'text' : 'password'}
                     placeholder="••••••••"
                     style={{ paddingRight: '44px' }}
-                    {...register('password', { required: 'Required' })}
+                    {...register('password', { required: t('auth.errors.required') })}
                   />
                   <button type="button" className="show-pass-btn" onClick={() => setShowPassword(v => !v)}>
                     {showPassword ? (
@@ -259,13 +261,13 @@ const LoginPage = () => {
               </div>
 
               <button className="auth-btn" disabled={loading} style={{ marginTop: '4px' }}>
-                {loading ? 'Signing in...' : 'Sign In'}
+                {loading ? t('auth.signingIn') : t('auth.loginBtn')}
               </button>
             </form>
 
             <p style={s.footerText}>
-              No account?{' '}
-              <Link to="/register" style={s.footerLink}>Create one</Link>
+              {t('auth.noAccount')}{' '}
+              <Link to="/register" style={s.footerLink}>{t('auth.createOne')}</Link>
             </p>
           </>
         ) : (
@@ -274,14 +276,14 @@ const LoginPage = () => {
               <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round">
                 <path d="M10 7H4M7 4l-3 3 3 3"/>
               </svg>
-              Back to login
+              {t('auth.backToLogin')}
             </button>
 
             {!forgotSent ? (
               <>
                 <div style={s.headGroup}>
-                  <h1 style={s.title}>Reset password</h1>
-                  <p style={s.subtitle}>Enter your email and we'll send a reset code</p>
+                  <h1 style={s.title}>{t('auth.resetPassword')}</h1>
+                  <p style={s.subtitle}>{t('auth.resetSubtitle')}</p>
                 </div>
 
                 {forgotError && (
@@ -296,7 +298,7 @@ const LoginPage = () => {
 
                 <form onSubmit={handleForgot} style={s.form}>
                   <div style={s.field}>
-                    <label style={s.label}>Email</label>
+                    <label style={s.label}>{t('auth.email')}</label>
                     <input
                       className="auth-input"
                       type="email"
@@ -307,7 +309,7 @@ const LoginPage = () => {
                     />
                   </div>
                   <button className="auth-btn" disabled={forgotLoading} style={{ marginTop: '4px' }}>
-                    {forgotLoading ? 'Sending...' : 'Send Reset Code'}
+                    {forgotLoading ? t('auth.sending') : t('auth.sendResetCode')}
                   </button>
                 </form>
               </>
@@ -320,9 +322,9 @@ const LoginPage = () => {
                       <rect x="2" y="6" width="20" height="13" rx="2"/>
                     </svg>
                   </div>
-                  <h2 style={s.sentTitle}>Check your email</h2>
+                  <h2 style={s.sentTitle}>{t('auth.checkEmail')}</h2>
                   <p style={s.sentDesc}>
-                    We sent a reset code to <strong style={{ color: 'var(--text-primary)' }}>{forgotEmail}</strong>
+                    {t('auth.sentDesc')} <strong style={{ color: 'var(--text-primary)' }}>{forgotEmail}</strong>
                   </p>
                 </div>
 
@@ -338,10 +340,10 @@ const LoginPage = () => {
 
                 <form onSubmit={handleReset} style={{ ...s.form, marginTop: '20px' }}>
                   <div style={s.field}>
-                    <label style={s.label}>Reset Code</label>
+                    <label style={s.label}>{t('auth.resetCode')}</label>
                     <input
                       className="auth-input"
-                      placeholder="6-digit code"
+                      placeholder={t('auth.codePlaceholder')}
                       maxLength={6}
                       value={resetCode}
                       onChange={e => setResetCode(e.target.value)}
@@ -349,18 +351,18 @@ const LoginPage = () => {
                     />
                   </div>
                   <div style={s.field}>
-                    <label style={s.label}>New Password</label>
+                    <label style={s.label}>{t('auth.newPassword')}</label>
                     <input
                       className="auth-input"
                       type="password"
-                      placeholder="At least 8 characters"
+                      placeholder={t('auth.newPasswordPlaceholder')}
                       value={newPassword}
                       onChange={e => setNewPassword(e.target.value)}
                       required
                     />
                   </div>
                   <button className="auth-btn" disabled={resetLoading} style={{ marginTop: '4px' }}>
-                    {resetLoading ? 'Resetting...' : 'Reset Password'}
+                    {resetLoading ? t('auth.resetting') : t('auth.resetBtn')}
                   </button>
                 </form>
               </div>
@@ -371,10 +373,10 @@ const LoginPage = () => {
                     <path d="M4 12l6 6 12-12"/>
                   </svg>
                 </div>
-                <h2 style={s.sentTitle}>Password reset!</h2>
-                <p style={s.sentDesc}>Your password has been changed successfully.</p>
+                <h2 style={s.sentTitle}>{t('auth.passwordReset')}</h2>
+                <p style={s.sentDesc}>{t('auth.passwordResetDesc')}</p>
                 <button className="auth-btn" style={{ marginTop: '8px' }} onClick={resetForgotFlow}>
-                  Back to Sign In
+                  {t('auth.backToLogin')}
                 </button>
               </div>
             )}
@@ -442,12 +444,8 @@ const s = {
     letterSpacing: '-0.5px',
     marginBottom: '28px',
   },
-  logoApex: {
-    color: 'var(--accent)',
-  },
-  logoHub: {
-    color: 'var(--text-primary)',
-  },
+  logoApex: { color: 'var(--accent)' },
+  logoHub: { color: 'var(--text-primary)' },
   headGroup: {
     textAlign: 'center',
     marginBottom: '28px',

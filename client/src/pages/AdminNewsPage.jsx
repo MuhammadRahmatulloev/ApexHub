@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 
 const AdminNewsPage = () => {
   const { user } = useAuth()
+  const { t } = useTranslation()
   const navigate = useNavigate()
   const [news, setNews] = useState([])
   const [loading, setLoading] = useState(true)
@@ -20,18 +22,18 @@ const AdminNewsPage = () => {
   useEffect(() => {
     api.get('/news/all_news/')
       .then(res => setNews(res.data))
-      .catch(() => setError('Failed to load news'))
+      .catch(() => setError(t('news.loadError')))
       .finally(() => setLoading(false))
   }, [])
 
   const handleDelete = async (id) => {
-    if (!window.confirm('Delete this news?')) return
+    if (!window.confirm(t('news.deleteConfirm'))) return
     setDeleting(id)
     try {
       await api.delete(`/news/${id}/delete_news/`)
       setNews(prev => prev.filter(n => n.id !== id))
     } catch {
-      setError('Failed to delete')
+      setError(t('news.deleteError'))
     }
     setDeleting(null)
   }
@@ -42,7 +44,7 @@ const AdminNewsPage = () => {
       const res = await api.patch(`/news/${id}/toggle_publish/`)
       setNews(prev => prev.map(n => n.id === id ? { ...n, is_published: res.data.is_published } : n))
     } catch {
-      setError('Failed to toggle')
+      setError(t('news.toggleError'))
     }
     setToggling(null)
   }
@@ -130,11 +132,11 @@ const AdminNewsPage = () => {
       <div style={s.page}>
         <div style={s.topBar}>
           <div>
-            <h1 style={s.title}>News Management</h1>
-            <p style={s.sub}>Create and manage news articles</p>
+            <h1 style={s.title}>{t('news.management')}</h1>
+            <p style={s.sub}>{t('news.managementSub')}</p>
           </div>
           <button className="add-btn" onClick={() => navigate('/admin/news/create')}>
-            + Add News
+            {t('news.addNews')}
           </button>
         </div>
 
@@ -152,20 +154,20 @@ const AdminNewsPage = () => {
               <rect x="8" y="4" width="32" height="40" rx="4"/>
               <path d="M16 14h16M16 22h16M16 30h10"/>
             </svg>
-            <p style={s.emptyTitle}>No news yet</p>
-            <p style={s.emptyDesc}>Create your first news article</p>
+            <p style={s.emptyTitle}>{t('news.noNews')}</p>
+            <p style={s.emptyDesc}>{t('news.noNewsDesc')}</p>
             <button className="add-btn" style={{ marginTop: '8px' }} onClick={() => navigate('/admin/news/create')}>
-              Create First Article
+              {t('news.createFirst')}
             </button>
           </div>
         ) : (
           <div style={s.tableWrap}>
             <div style={s.tableHead}>
-              <span>Image</span>
-              <span>Title</span>
-              <span>Status</span>
-              <span>Date</span>
-              <span>Actions</span>
+              <span>{t('news.image')}</span>
+              <span>{t('news.titleLabel')}</span>
+              <span>{t('news.status')}</span>
+              <span>{t('news.date')}</span>
+              <span>{t('common.actions')}</span>
             </div>
             {news.map((item, i) => (
               <div
@@ -190,7 +192,7 @@ const AdminNewsPage = () => {
 
                 <span>
                   <span style={item.is_published ? s.publishedBadge : s.draftBadge}>
-                    {item.is_published ? 'Published' : 'Draft'}
+                    {item.is_published ? t('news.published') : t('news.draft')}
                   </span>
                 </span>
 
@@ -199,25 +201,22 @@ const AdminNewsPage = () => {
                 </span>
 
                 <div style={s.actionsCell}>
-                  <button
-                    className="edit-btn"
-                    onClick={() => navigate(`/admin/news/edit/${item.id}`)}
-                  >
-                    Edit
+                  <button className="edit-btn" onClick={() => navigate(`/admin/news/edit/${item.id}`)}>
+                    {t('common.edit')}
                   </button>
                   <button
                     className="toggle-btn"
                     onClick={() => handleToggle(item.id)}
                     disabled={toggling === item.id}
                   >
-                    {toggling === item.id ? '...' : item.is_published ? 'Hide' : 'Publish'}
+                    {toggling === item.id ? '...' : item.is_published ? t('news.hide') : t('news.publish')}
                   </button>
                   <button
                     className="del-btn"
                     onClick={() => handleDelete(item.id)}
                     disabled={deleting === item.id}
                   >
-                    {deleting === item.id ? '...' : 'Delete'}
+                    {deleting === item.id ? '...' : t('common.delete')}
                   </button>
                 </div>
               </div>
