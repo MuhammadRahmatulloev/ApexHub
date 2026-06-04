@@ -60,9 +60,8 @@ class ProductListSerializer(serializers.ModelSerializer):
     def get_main_image(self, obj):
         image = obj.images.filter(is_main=True).first()
         if image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(image.image.url)
+            from django.conf import settings
+            return f"{settings.MEDIA_URL}{image.image}"
         return None
 
 

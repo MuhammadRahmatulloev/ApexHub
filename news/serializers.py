@@ -27,7 +27,6 @@ class NewsListSerializer(serializers.ModelSerializer):
 
     def get_image(self, obj):
         if obj.image:
-            request = self.context.get('request')
-            if request:
-                return request.build_absolute_uri(obj.image.url)
+            from django.conf import settings
+            return f"{settings.MEDIA_URL}{obj.image}"
         return None
