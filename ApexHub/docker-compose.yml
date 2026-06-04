@@ -1,0 +1,62 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: apexhub_redis
+    restart: always
+    networks:
+      - apexhub_net
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apexhub_backend
+    restart: always
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./media:/app/media
+      - ./staticfiles:/app/staticfiles
+    depends_on:
+      - redis
+    networks:
+      - apexhub_net
+
+  celery:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: apexhub_celery
+    command: ["celery", "-A", "config", "worker", "-l", "info"]
+    restart: always
+    env_file: .env
+    volumes:
+      - ./data:/app/data
+      - ./media:/app/media
+    depends_on:
+      - redis
+      - backend
+    networks:
+      - apexhub_net
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    container_name: apexhub_nginx
+    restart: always
+    ports:
+      - "8099:80"
+    volumes:
+      - ./media:/media
+      - ./staticfiles:/static
+    depends_on:
+      - backend
+    networks:
+      - apexhub_net
+
+networks:
+  apexhub_net:
+    driver: bridge
