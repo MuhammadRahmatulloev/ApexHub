@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const OrdersPage = () => {
   const { t } = useTranslation()
@@ -254,7 +255,7 @@ const OrdersPage = () => {
                           <div key={item.id} className="item-row">
                             <div style={s.itemImgWrap}>
                               {item.product?.main_image
-                                ? <img src={item.product.main_image} alt={item.product.name} style={s.itemImg} />
+                                ? <img src={getMediaUrl(item.product?.main_image)} alt={item.product?.name} style={s.itemImg} />
                                 : (
                                   <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round">
                                     <rect x="1" y="2" width="16" height="12" rx="2"/>

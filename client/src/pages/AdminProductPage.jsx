@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../context/AuthContext'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const AdminProductPage = () => {
   const { t } = useTranslation()
@@ -224,7 +225,7 @@ const AdminProductPage = () => {
               >
                 <div style={s.thumb}>
                   {p.main_image
-                    ? <img src={p.main_image} alt="" style={s.thumbImg} />
+                    ? <img src={getMediaUrl(p.main_image)} alt="" style={s.thumbImg} />
                     : (
                       <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round">
                         <rect x="1" y="2" width="16" height="12" rx="2"/>

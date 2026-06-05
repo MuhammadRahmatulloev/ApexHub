@@ -3,6 +3,7 @@ import { useNavigate, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const CartPage = () => {
   const { t } = useTranslation()
@@ -192,7 +193,7 @@ const CartPage = () => {
                   >
                     <div style={s.itemImg}>
                       {item.product.main_image
-                        ? <img src={item.product.main_image} alt={item.product.name} style={s.img} />
+                        ? <img src={getMediaUrl(item.product.main_image)} alt={item.product.name} style={s.img} />
                         : (
                           <svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round">
                             <rect x="1" y="3" width="20" height="14" rx="2"/>

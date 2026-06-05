@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const AdminNewsPage = () => {
   const { user } = useAuth()
@@ -177,7 +178,7 @@ const AdminNewsPage = () => {
               >
                 <div style={s.thumb}>
                   {item.image
-                    ? <img src={item.image} alt="" style={s.thumbImg} />
+                    ? <img src={getMediaUrl(item.image)} alt="" style={s.thumbImg} />
                     : (
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round">
                         <rect x="1" y="3" width="18" height="14" rx="3"/>

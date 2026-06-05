@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const ProductCard = ({ p }) => {
   const [hovered, setHovered] = useState(false)
@@ -20,7 +21,7 @@ const ProductCard = ({ p }) => {
     >
       <div style={s.cardImg}>
         {p.main_image
-          ? <img src={p.main_image} alt={p.name} style={s.img} />
+          ? <img src={getMediaUrl(p.main_image)} alt={p.name} style={s.img} />
           : (
             <svg width="36" height="36" viewBox="0 0 36 36" fill="none" stroke="var(--border-hover)" strokeWidth="1.2" strokeLinecap="round">
               <rect x="2" y="4" width="32" height="22" rx="3"/>

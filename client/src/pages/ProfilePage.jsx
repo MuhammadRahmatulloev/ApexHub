@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const ProfilePage = () => {
   const { user, logout } = useAuth()
@@ -321,7 +322,7 @@ const becomeSeller = async () => {
             <div style={s.avatarSection}>
               <div className="avatar-wrap" style={s.avatarWrap} onClick={() => !avatarLoading && avatarRef.current?.click()}>
                 {user.avatar
-                  ? <img src={user.avatar} alt="" style={s.avatarImg} />
+                  ? <img src={getMediaUrl(user.avatar)} alt="" style={s.avatarImg} />
                   : <div style={s.avatarPlaceholder}>{initials}</div>
                 }
                 <div className="avatar-overlay">

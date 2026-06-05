@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
+import { getMediaUrl } from '../utils/media'
 
 const StarRating = ({ rating, size = 16 }) => {
   return (
@@ -275,7 +276,7 @@ const ProductDetailPage = () => {
         <div style={s.galleryCol}>
           <div style={s.mainImgWrap}>
             {product.images?.length > 0
-              ? <img src={product.images[activeImg].image} alt={product.name} style={s.mainImg} />
+              ? <img src={getMediaUrl(product.images[activeImg].image)} alt={product.name} style={s.mainImg} />
               : (
                 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="var(--border-hover)" strokeWidth="1.2" strokeLinecap="round">
                   <rect x="4" y="8" width="56" height="38" rx="4"/>
@@ -297,7 +298,7 @@ const ProductDetailPage = () => {
                   style={{ border: `2px solid ${i === activeImg ? 'var(--accent)' : 'var(--border)'}` }}
                   onClick={() => setActiveImg(i)}
                 >
-                  <img src={img.image} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <img src={getMediaUrl(img.image)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 </div>
               ))}
             </div>

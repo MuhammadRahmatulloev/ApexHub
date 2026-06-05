@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const SellerProductForm = () => {
   const { id } = useParams()
@@ -458,7 +459,7 @@ const SellerProductForm = () => {
             <div style={s.imgGrid}>
               {existingImages.map(img => (
                 <div key={img.id} style={s.imgThumb}>
-                  <img src={img.image} alt="" style={s.thumbImg} />
+                  <img src={getMediaUrl(img.image)} alt="" style={s.thumbImg} />
                   {img.is_main && <span style={s.mainBadge}>{t('seller.form.main')}</span>}
                   <button type="button" className="img-remove-btn" onClick={() => removeExistingImage(img.id)}>✕</button>
                 </div>

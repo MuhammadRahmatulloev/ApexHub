@@ -4,6 +4,7 @@ import { useAuth } from '../context/AuthContext'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const PAGE_SIZE = 50
 
@@ -260,7 +261,7 @@ const SellerPage = () => {
                   <div style={s.productCell}>
                     <div style={s.thumb}>
                       {product.main_image
-                        ? <img src={product.main_image} alt="" style={s.thumbImg} />
+                        ? <img src={getMediaUrl(product.main_image)} alt="" style={s.thumbImg} />
                         : (
                           <svg width="18" height="18" viewBox="0 0 18 18" fill="none" stroke="var(--text-muted)" strokeWidth="1.2" strokeLinecap="round">
                             <rect x="1" y="2" width="16" height="12" rx="2"/>

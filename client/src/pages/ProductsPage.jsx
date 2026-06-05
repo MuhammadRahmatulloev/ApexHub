@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const ProductCard = ({ product }) => {
   const { t } = useTranslation()
@@ -22,7 +23,7 @@ const ProductCard = ({ product }) => {
     >
       <div style={s.cardImg}>
         {product.main_image
-          ? <img src={product.main_image} alt={product.name} style={s.img} />
+          ? <img src={getMediaUrl(product.main_image)} alt={product.name} style={s.img} />
           : (
             <svg width="40" height="40" viewBox="0 0 40 40" fill="none" stroke="var(--border-hover)" strokeWidth="1.2" strokeLinecap="round">
               <rect x="2" y="5" width="36" height="24" rx="3"/>

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import Layout from '../components/Layout'
 import api from '../api/axios'
+import { getMediaUrl } from '../utils/media'
 
 const NewsPage = () => {
   const { t } = useTranslation()
@@ -29,7 +30,7 @@ const NewsPage = () => {
             <Link to={`/news/${item.id}`} key={item.id} style={s.card}>
               <div style={s.imgWrap}>
                 {item.image
-                  ? <img src={item.image} alt={item.title} style={s.img} />
+                  ? <img src={getMediaUrl(item.image)} alt={item.title} style={s.img} />
                   : <div style={s.noImg} />
                 }
               </div>
